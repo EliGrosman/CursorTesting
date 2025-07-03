@@ -8,11 +8,12 @@ import shutil
 import uuid
 from typing import List, Optional
 
-from database import SessionLocal, engine, Base
+from database import SessionLocal, engine, Base, get_db
 from models import Post, ScheduledPost
 from schemas import PostCreate, PostResponse, ScheduledPostCreate, ScheduledPostResponse
 from social_media import SocialMediaManager
 from scheduler import schedule_post
+from oauth_routes import router as oauth_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -35,13 +36,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Mount static files
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# Dependency to get database session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Include OAuth routes
+app.include_router(oauth_router, prefix="/api", tags=["OAuth & Testing"])
 
 @app.get("/")
 async def root():

@@ -55,10 +55,17 @@ A modern web application for scheduling video content across Instagram, TikTok, 
    ./run-app.sh
    ```
 
-4. **Access the application**
+4. **Configure social media APIs** (optional)
+   ```bash
+   cd backend
+   python config_setup.py
+   ```
+
+5. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
    - API Documentation: http://localhost:8000/docs
+   - OAuth Setup: http://localhost:8000/api/auth/{platform}/login
 
 ## Manual Setup
 
@@ -132,30 +139,39 @@ social-media-scheduler/
 - `POST /schedule` - Schedule a post
 - `GET /scheduled-posts` - Get scheduled posts
 
+### OAuth & Integration
+- `GET /api/auth/{platform}/login` - Start OAuth flow for platform
+- `GET /api/auth/{platform}/callback` - OAuth callback handler
+- `GET /api/platforms/status` - Get platform configuration status
+- `POST /api/platforms/{platform}/refresh` - Refresh access token
+- `DELETE /api/platforms/{platform}/disconnect` - Disconnect platform
+
+### Testing
+- `POST /api/test/{platform}` - Test posting to specific platform
+
 ### API Documentation
 Visit http://localhost:8000/docs for interactive API documentation.
 
 ## Social Media Integration
 
-The application provides placeholder implementations for social media APIs. To enable actual posting:
+The application includes **production-ready implementations** for all social media platforms:
 
-### Instagram
-1. Create a Facebook App
-2. Get Instagram Basic Display API access
-3. Implement OAuth flow
-4. Update `social_media.py` with actual API calls
+### 🔧 Quick Setup
+1. **Get API Keys**: Follow the detailed guide in [`SOCIAL_MEDIA_SETUP.md`](SOCIAL_MEDIA_SETUP.md)
+2. **Configure Credentials**: Run the setup script:
+   ```bash
+   cd backend
+   python config_setup.py
+   ```
+3. **Test Integration**: Use the built-in test endpoints
 
-### TikTok
-1. Apply for TikTok for Developers access
-2. Create TikTok app and get credentials
-3. Implement OAuth flow
-4. Update `social_media.py` with actual API calls
-
-### YouTube
-1. Create Google Cloud Project
-2. Enable YouTube Data API v3
-3. Set up OAuth 2.0 credentials
-4. Update `social_media.py` with actual API calls
+### ✅ Production Features
+- **Instagram**: Full Instagram Graph API integration with video posting
+- **TikTok**: TikTok for Developers API v2 with video upload
+- **YouTube**: YouTube Data API v3 with automatic Shorts detection
+- **OAuth Flow**: Built-in OAuth authentication for all platforms
+- **Token Management**: Automatic token refresh and error handling
+- **Rate Limiting**: Proper rate limit handling and retry logic
 
 ## Configuration
 
