@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Game Hub</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Daily Game Hub</h1>
+        <p class="tagline">Challenge yourself with a new puzzle every day!</p>
+    </header>
+    
+    <main>
+        <div class="games-grid">
+            <div class="game-card" onclick="window.location.href='wordle.html'">
+                <div class="game-icon">
+                    <div class="wordle-icon">
+                        <div class="letter-box">W</div>
+                        <div class="letter-box">O</div>
+                        <div class="letter-box">R</div>
+                        <div class="letter-box">D</div>
+                        <div class="letter-box">L</div>
+                        <div class="letter-box">E</div>
+                    </div>
+                </div>
+                <h2>Wordle</h2>
+                <p>Guess the 5-letter word in 6 tries</p>
+                <div class="play-button">Play Now</div>
+            </div>
+            
+            <div class="game-card coming-soon">
+                <div class="game-icon">
+                    <span class="placeholder-icon">🎯</span>
+                </div>
+                <h2>Coming Soon</h2>
+                <p>More games on the way!</p>
+                <div class="play-button disabled">Coming Soon</div>
+            </div>
+            
+            <div class="game-card coming-soon">
+                <div class="game-icon">
+                    <span class="placeholder-icon">🧩</span>
+                </div>
+                <h2>Coming Soon</h2>
+                <p>Stay tuned for updates!</p>
+                <div class="play-button disabled">Coming Soon</div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daily Game Hub. Play responsibly!</p>
+    </footer>
+</body>
+</html>
