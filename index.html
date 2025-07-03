@@ -14,45 +14,16 @@
     </header>
     
     <main>
-        <div class="games-grid">
-            <div class="game-card" onclick="window.location.href='wordle.html'">
-                <div class="game-icon">
-                    <div class="wordle-icon">
-                        <div class="letter-box">W</div>
-                        <div class="letter-box">O</div>
-                        <div class="letter-box">R</div>
-                        <div class="letter-box">D</div>
-                        <div class="letter-box">L</div>
-                        <div class="letter-box">E</div>
-                    </div>
-                </div>
-                <h2>Wordle</h2>
-                <p>Guess the 5-letter word in 6 tries</p>
-                <div class="play-button">Play Now</div>
-            </div>
-            
-            <div class="game-card coming-soon">
-                <div class="game-icon">
-                    <span class="placeholder-icon">🎯</span>
-                </div>
-                <h2>Coming Soon</h2>
-                <p>More games on the way!</p>
-                <div class="play-button disabled">Coming Soon</div>
-            </div>
-            
-            <div class="game-card coming-soon">
-                <div class="game-icon">
-                    <span class="placeholder-icon">🧩</span>
-                </div>
-                <h2>Coming Soon</h2>
-                <p>Stay tuned for updates!</p>
-                <div class="play-button disabled">Coming Soon</div>
-            </div>
+        <div class="games-grid" id="games-grid">
+            <!-- Games will be dynamically loaded here -->
         </div>
     </main>
     
     <footer>
         <p>&copy; 2024 Daily Game Hub. Play responsibly!</p>
     </footer>
+    
+    <script src="js/gameConfig.js"></script>
+    <script src="js/hub.js"></script>
 </body>
 </html>
