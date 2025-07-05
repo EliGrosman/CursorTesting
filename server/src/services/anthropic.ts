@@ -109,9 +109,29 @@ export class AnthropicService {
   getAvailableModels() {
     return [
       {
+        id: 'claude-sonnet-4-20250514',
+        name: 'Claude 4 Sonnet',
+        description: 'Latest and most advanced model with enhanced reasoning',
+        supportsFunctions: true,
+        supportsVision: true,
+        supportsThinking: true,
+        contextWindow: 500000,
+        outputTokens: 16384
+      },
+      {
+        id: 'claude-opus-4-20250514',
+        name: 'Claude 4 Opus',
+        description: 'Cutting-edge model for the most complex tasks',
+        supportsFunctions: true,
+        supportsVision: true,
+        supportsThinking: true,
+        contextWindow: 500000,
+        outputTokens: 16384
+      },
+      {
         id: 'claude-3-5-sonnet-20241022',
         name: 'Claude 3.5 Sonnet',
-        description: 'Most capable model with extended thinking',
+        description: 'Most capable Claude 3 model with extended thinking',
         supportsFunctions: true,
         supportsVision: true,
         supportsThinking: true,
@@ -143,8 +163,10 @@ export class AnthropicService {
 
   // Calculate token usage and cost
   calculateCost(usage: { input_tokens: number; output_tokens: number }, model: string) {
-    // Prices per 1M tokens (as of late 2024)
+    // Prices per 1M tokens (as of 2025)
     const pricing: Record<string, { input: number; output: number }> = {
+      'claude-sonnet-4-20250514': { input: 4, output: 20 },
+      'claude-opus-4-20250514': { input: 20, output: 100 },
       'claude-3-5-sonnet-20241022': { input: 3, output: 15 },
       'claude-3-opus-20240229': { input: 15, output: 75 },
       'claude-3-haiku-20240307': { input: 0.25, output: 1.25 }
@@ -163,6 +185,60 @@ export class AnthropicService {
       outputCost,
       totalCost: inputCost + outputCost
     };
+  }
+
+  // Create batch request
+  async createBatch(requests: Array<{
+    custom_id: string;
+    params: {
+      model: string;
+      max_tokens: number;
+      messages: MessageParam[];
+      temperature?: number;
+      system?: string;
+    };
+  }>) {
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages/batches', {
+        method: 'POST',
+        headers: {
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ requests })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Batch API error: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Batch creation error:', error);
+      throw error;
+    }
+  }
+
+  // Get batch status
+  async getBatchStatus(batchId: string) {
+    try {
+      const response = await fetch(`https://api.anthropic.com/v1/messages/batches/${batchId}`, {
+        headers: {
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Batch status error: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Batch status error:', error);
+      throw error;
+    }
   }
 }
 

@@ -1,17 +1,36 @@
-# Claude Clone - Full-Featured AI Assistant
+# Claude Clone - Full-Featured AI Assistant PWA
 
-A complete clone of Claude's interface with all functionality, using Anthropic's API with pay-as-you-go pricing instead of subscriptions. Built with React, TypeScript, Node.js, and WebSocket for real-time streaming.
+A complete Progressive Web App (PWA) clone of Claude with enhanced features, using Anthropic's API with pay-as-you-go pricing. Now includes Claude 4 models, user authentication, folders, search, and batch processing.
 
 ## Features
 
+- 📱 **Progressive Web App**
+  - Install on mobile/desktop
+  - Offline support with service workers
+  - Push notifications
+  - Mobile-optimized UI
+
 - 🤖 **Full Claude Functionality**
   - Real-time streaming responses with WebSocket
-  - Support for all Claude models (Sonnet, Opus, Haiku)
-  - Extended thinking mode for Claude 3.5 Sonnet
+  - Support for ALL Claude models including Claude 4 Sonnet & Opus
+  - Extended thinking mode
   - File attachments and image support
-  - Conversation history and management
+  - Batch processing API for multiple requests
 
-- 🔍 **Research Capabilities**
+- 🔐 **User Authentication**
+  - Secure JWT-based authentication
+  - User registration and login
+  - Personal conversation history
+  - User preferences
+
+- 📁 **Organization Features**
+  - Create folders to organize conversations
+  - Drag-and-drop conversation management
+  - Nested folder support
+  - Custom folder colors and icons
+
+- 🔍 **Advanced Search & Research**
+  - Fuzzy search across all conversations
   - Web search integration
   - Deep research mode with source extraction
   - Content summarization from multiple sources
@@ -19,22 +38,27 @@ A complete clone of Claude's interface with all functionality, using Anthropic's
 - 💰 **Pay-As-You-Go Pricing**
   - Real-time cost tracking per message
   - Total conversation cost display
-  - Transparent pricing information
+  - Support for batch API cost optimization
+  - Transparent pricing for all models
 
 - 🎨 **Modern UI/UX**
   - Beautiful Claude-inspired interface
   - Dark/light mode support
   - Markdown rendering with syntax highlighting
-  - Responsive design for all devices
+  - Mobile-first responsive design
+  - Smooth animations with Framer Motion
 
 - 💾 **Data Management**
+  - PostgreSQL database for persistence
   - Export conversations as Markdown
-  - Conversation search and filtering
+  - Advanced conversation search
   - Auto-save functionality
+  - Offline message queueing
 
 ## Prerequisites
 
 - Node.js 18+ and npm
+- PostgreSQL 13+ database
 - Anthropic API key ([Get one here](https://console.anthropic.com/))
 - (Optional) Google Custom Search API key for enhanced research
 
@@ -51,22 +75,35 @@ A complete clone of Claude's interface with all functionality, using Anthropic's
    npm run install:all
    ```
 
-3. **Configure environment variables**
+3. **Set up PostgreSQL database**
+   ```bash
+   # Create database
+   createdb claude_clone
+   
+   # Run migrations
+   cd server
+   psql claude_clone < src/db/schema.sql
+   ```
+
+4. **Configure environment variables**
    ```bash
    cd server
    cp .env.example .env
    ```
    
-   Edit the `.env` file and add your API keys:
+   Edit the `.env` file and add your configurations:
    ```env
+   # Required
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   DATABASE_URL=postgresql://localhost:5432/claude_clone
+   JWT_SECRET=your-secret-key-change-in-production
    
    # Optional for web search
    SEARCH_API_KEY=your_google_api_key
    SEARCH_ENGINE_ID=your_search_engine_id
    ```
 
-4. **Start the application**
+5. **Start the application**
    ```bash
    # From the root directory
    npm run dev
@@ -75,6 +112,11 @@ A complete clone of Claude's interface with all functionality, using Anthropic's
    This will start:
    - Backend server on http://localhost:3001
    - Frontend on http://localhost:5173
+
+6. **Access the app**
+   - Open http://localhost:5173
+   - Register a new account
+   - Start chatting with Claude!
 
 ## Usage
 
@@ -103,15 +145,17 @@ Navigate to Settings to:
 
 ## API Costs
 
-Current Anthropic API pricing (as of late 2024):
+Current Anthropic API pricing (as of 2025):
 
-| Model | Input (per 1M tokens) | Output (per 1M tokens) |
-|-------|----------------------|------------------------|
-| Claude 3.5 Sonnet | $3.00 | $15.00 |
-| Claude 3 Opus | $15.00 | $75.00 |
-| Claude 3 Haiku | $0.25 | $1.25 |
+| Model | Input (per 1M tokens) | Output (per 1M tokens) | Context Window |
+|-------|----------------------|------------------------|----------------|
+| Claude 4 Sonnet | $4.00 | $20.00 | 500K tokens |
+| Claude 4 Opus | $20.00 | $100.00 | 500K tokens |
+| Claude 3.5 Sonnet | $3.00 | $15.00 | 200K tokens |
+| Claude 3 Opus | $15.00 | $75.00 | 200K tokens |
+| Claude 3 Haiku | $0.25 | $1.25 | 200K tokens |
 
-The app tracks costs in real-time and displays them after each message.
+The app tracks costs in real-time and displays them after each message. Use the Batch API for up to 50% cost savings on non-urgent requests.
 
 ## Architecture
 

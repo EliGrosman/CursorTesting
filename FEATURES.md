@@ -1,15 +1,22 @@
-# 🎯 Claude Clone Features
+# 🎯 Claude Clone Features - Enhanced PWA Edition
 
 ## Feature Comparison
 
-| Feature | Official Claude Pro | Claude Clone | Notes |
-|---------|-------------------|--------------|-------|
+| Feature | Official Claude Pro | Claude Clone PWA | Notes |
+|---------|-------------------|------------------|-------|
 | **Pricing Model** | $20/month subscription | Pay-as-you-go | Only pay for what you use |
 | **Message Limits** | Daily limits | No limits | Limited only by your API quota |
-| **Model Access** | All models | All models | Sonnet, Opus, Haiku |
-| **Extended Thinking** | ✅ | ✅ | Full support for Sonnet |
+| **Claude 4 Models** | ✅ | ✅ | Sonnet & Opus with 500K context |
+| **Claude 3 Models** | ✅ | ✅ | All variants available |
+| **Extended Thinking** | ✅ | ✅ | Full support for compatible models |
+| **Batch API** | ❌ | ✅ | Process multiple requests at once |
+| **User Authentication** | ✅ | ✅ | Secure JWT-based auth |
+| **Folders** | ❌ | ✅ | Organize conversations |
+| **Search Conversations** | Limited | ✅ | Full-text fuzzy search |
+| **Mobile App** | ❌ | ✅ | PWA installable |
+| **Offline Support** | ❌ | ✅ | Service worker caching |
 | **File Uploads** | ✅ | ✅ | Images, text, code files |
-| **Conversation History** | ✅ | ✅ | Local storage |
+| **Conversation History** | ✅ | ✅ | PostgreSQL persistence |
 | **Export Conversations** | ✅ | ✅ | Markdown export |
 | **Web Search** | ❌ | ✅ | Research capabilities |
 | **Real-time Cost Tracking** | ❌ | ✅ | See costs per message |
