@@ -6,16 +6,6 @@ import { useAuthStore } from '../stores/authStore';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
-interface ApiKey {
-  id: string;
-  name: string;
-  lastUsedAt: string | null;
-  expiresAt: string | null;
-  isActive: boolean;
-  createdAt: string;
-  isExpired?: boolean;
-}
-
 export default function Settings() {
   const {
     temperature,
