@@ -2,6 +2,8 @@ import { Server as IOServer, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { secureAnthropicService } from './anthropic-secure';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
+import { queryOne } from '../db';
+import jwt from 'jsonwebtoken';
 
 interface WSMessage {
   type: 'chat' | 'ping' | 'pong' | 'error' | 'usage' | 'thinking';
@@ -14,21 +16,47 @@ interface ActiveConnection {
   socket: Socket;
   conversationId?: string;
   isAlive: boolean;
+  userId?: string;
 }
 
 class WebSocketService {
   private connections: Map<string, ActiveConnection> = new Map();
 
-  handleConnection(socket: Socket) {
+  async handleConnection(socket: Socket) {
     const connectionId = socket.id;
+    
+    // Try to authenticate user from handshake auth
+    let userId: string | undefined;
+    try {
+      const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+      if (token) {
+        const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        
+        // Verify user exists
+        const user = await queryOne(
+          'SELECT id FROM users WHERE id = $1',
+          [decoded.id]
+        );
+        
+        if (user) {
+          userId = user.id;
+          console.log(`Authenticated WebSocket user: ${userId}`);
+        }
+      }
+    } catch (error) {
+      console.log('WebSocket authentication failed:', error);
+    }
+
     const connection: ActiveConnection = {
       id: connectionId,
       socket,
-      isAlive: true
+      isAlive: true,
+      userId
     };
 
     this.connections.set(connectionId, connection);
-    console.log(`New Socket.IO connection: ${connectionId}`);
+    console.log(`New Socket.IO connection: ${connectionId}${userId ? ` (user: ${userId})` : ' (anonymous)'}`);
 
     // Send welcome message
     // socket.emit('message', {
@@ -78,6 +106,12 @@ class WebSocketService {
   private async handleChatMessage(socket: Socket, data: any) {
     try {
       console.log('🤖 Processing chat message:', data);
+      
+      const connection = this.connections.get(socket.id);
+      if (!connection) {
+        throw new Error('Connection not found');
+      }
+
       const {
         messages,
         model = 'claude-3-5-sonnet-20241022',
@@ -94,20 +128,40 @@ class WebSocketService {
         content: msg.content
       }));
 
-      // Check if API key is provided
-      if (!apiKey) {
-        throw new Error('API key required for websocket connections');
+      // Use provided API key or get from user's stored keys
+      let finalApiKey = apiKey;
+      if (!finalApiKey && connection.userId) {
+        // Get user's stored API key
+        const apiKeyRecord = await queryOne(
+          `SELECT encrypted_key 
+           FROM api_keys 
+           WHERE user_id = $1 
+             AND is_active = true 
+             AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+           ORDER BY last_used_at DESC NULLS LAST, created_at DESC
+           LIMIT 1`,
+          [connection.userId]
+        );
+
+        if (apiKeyRecord) {
+          const { encryptionService } = require('./encryption');
+          finalApiKey = encryptionService.decrypt(apiKeyRecord.encrypted_key);
+        }
       }
 
-      // Start streaming response using secure service with direct API key
-      const stream = secureAnthropicService.streamMessage('websocket', cleanMessages, {
+      if (!finalApiKey) {
+        throw new Error('API key required. Please provide an API key or add one in your account settings.');
+      }
+
+      // Start streaming response using secure service
+      const stream = secureAnthropicService.streamMessage(connection.userId || 'websocket', cleanMessages, {
         model,
         temperature,
         maxTokens,
         systemPrompt,
         stream: true,
         enableThinking,
-        directApiKey: apiKey
+        directApiKey: finalApiKey
       });
 
       let fullContent = '';

@@ -84,11 +84,16 @@ let socket: Socket | null = null;
 export const websocketService = {
   connect(): Socket {
     if (!socket) {
+      const token = localStorage.getItem('claude_auth_token');
+      
       socket = io(WS_BASE_URL || window.location.origin, {
         transports: ['websocket'],
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
+        auth: {
+          token: token || undefined
+        }
       });
 
       socket.on('connect', () => {
