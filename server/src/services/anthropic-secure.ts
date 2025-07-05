@@ -181,6 +181,41 @@ export class SecureAnthropicService {
     }
   }
 
+  // Get batch status with user's API key
+  async getBatchStatus(userId: string, batchId: string) {
+    // Get user's API key
+    const apiKeyRecord = await queryOne(
+      `SELECT encrypted_key FROM api_keys 
+       WHERE user_id = $1 AND is_active = true 
+       ORDER BY last_used_at DESC NULLS LAST LIMIT 1`,
+      [userId]
+    );
+
+    if (!apiKeyRecord) {
+      throw new Error('No active API key found. Please add your Anthropic API key in the Settings page. You can add multiple API keys and manage them securely.');
+    }
+
+    const apiKey = encryptionService.decrypt(apiKeyRecord.encrypted_key);
+
+    try {
+      const response = await fetch(`https://api.anthropic.com/v1/messages/batches/${batchId}`, {
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Batch status error: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Batch status error:', error);
+      throw error;
+    }
+  }
+
   // Helper to format messages for the API
   formatUserMessage(content: string, attachments?: Array<{ type: string; data: string; mimeType?: string }>): MessageParam {
     const contentBlocks: any[] = [{ type: 'text', text: content }];

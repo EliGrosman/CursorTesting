@@ -1,6 +1,6 @@
 import { Server as IOServer, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { getAnthropicService } from './anthropic';
+import { secureAnthropicService } from './anthropic-secure';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
 
 interface WSMessage {
@@ -84,7 +84,8 @@ class WebSocketService {
         temperature = 0.7,
         maxTokens = 4096,
         systemPrompt,
-        enableThinking = false
+        enableThinking = false,
+        apiKey // Allow direct API key for websocket connections
       } = data;
 
       // Clean messages to only include fields that Anthropic API accepts
@@ -93,14 +94,20 @@ class WebSocketService {
         content: msg.content
       }));
 
-      // Start streaming response
-      const stream = getAnthropicService().streamMessage(cleanMessages, {
+      // Check if API key is provided
+      if (!apiKey) {
+        throw new Error('API key required for websocket connections');
+      }
+
+      // Start streaming response using secure service with direct API key
+      const stream = secureAnthropicService.streamMessage('websocket', cleanMessages, {
         model,
         temperature,
         maxTokens,
         systemPrompt,
         stream: true,
-        enableThinking
+        enableThinking,
+        directApiKey: apiKey
       });
 
       let fullContent = '';
@@ -159,7 +166,7 @@ class WebSocketService {
           // Send final message with usage info
           const usage = (event as any).message?.usage;
           if (usage) {
-            const cost = getAnthropicService().calculateCost(usage, model);
+            const cost = secureAnthropicService.calculateCost(usage, model);
             this.sendMessage(socket, {
               type: 'usage',
               data: cost
