@@ -11,7 +11,7 @@ services:
     pullRequestPreviewsEnabled: true
     envVars:
       - key: NODE_VERSION
-        value: 18
+        value: 20
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -46,7 +46,7 @@ services:
     pullRequestPreviewsEnabled: true
     envVars:
       - key: NODE_VERSION
-        value: 18
+        value: 20
       - key: VITE_API_URL
         value: https://claude-clone-api.onrender.com
       - key: VITE_WS_URL

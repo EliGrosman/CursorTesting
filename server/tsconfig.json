@@ -15,7 +15,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "useUnknownInCatchVariables": true
+    "useUnknownInCatchVariables": true,
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
