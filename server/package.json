@@ -8,9 +8,7 @@
     "build": "tsc && mkdir -p dist/db && cp src/db/schema.sql dist/db/schema.sql",
     "start": "node dist/index.js",
     "db:migrate": "node dist/db/migrate.js",
-    "db:seed": "node dist/db/seed.js",
-    "db:migrate:dev": "tsx src/db/migrate.ts",
-    "db:seed:dev": "tsx src/db/seed.ts"
+    "db:migrate:dev": "tsx src/db/migrate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
