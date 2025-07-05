@@ -109,8 +109,7 @@ class WebSocketService {
           temperature,
           messages: cleanMessages,
           ...(systemPrompt ? { system: systemPrompt } : {}),
-          stream: true,
-          ...(enableThinking ? { metadata: { thinking_mode: 'enabled' } } : {})
+          stream: true
         }) as unknown as AsyncIterable<any>;
       } else {
         // Anonymous/system workflow

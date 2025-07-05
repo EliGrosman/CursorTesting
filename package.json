@@ -13,7 +13,12 @@
     "start": "node server/dist/index.js",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install"
   },
-  "keywords": ["claude", "ai", "anthropic", "chat"],
+  "keywords": [
+    "claude",
+    "ai",
+    "anthropic",
+    "chat"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {

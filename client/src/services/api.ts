@@ -90,7 +90,7 @@ export const websocketService = {
         console.log('WebSocket disconnected');
       });
 
-      socket.on('error', (error) => {
+      socket.on('error', (error: unknown) => {
         console.error('WebSocket error:', error);
       });
     }
@@ -198,7 +198,7 @@ export const searchApi = {
   ): Promise<ResearchResult> {
     return new Promise((resolve, reject) => {
       const controller = new AbortController();
-      
+
       fetch(`${API_BASE_URL}/search/research`, {
         method: 'POST',
         headers: {
@@ -210,7 +210,7 @@ export const searchApi = {
         .then(async (response) => {
           const reader = response.body?.getReader();
           const decoder = new TextDecoder();
-          
+
           if (!reader) {
             throw new Error('No response body');
           }
@@ -233,7 +233,7 @@ export const searchApi = {
                   } else if (onProgress) {
                     onProgress(data);
                   }
-                } catch (e) {
+                } catch {
                   // Ignore parsing errors
                 }
               }
