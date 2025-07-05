@@ -75,7 +75,7 @@ export class AnthropicService {
   ) {
     const stream = await this.createMessage(messages, { ...options, stream: true });
 
-    for await (const event of stream as AsyncIterable<MessageStreamEvent>) {
+    for await (const event of stream as unknown as AsyncIterable<MessageStreamEvent>) {
       yield event;
     }
   }
