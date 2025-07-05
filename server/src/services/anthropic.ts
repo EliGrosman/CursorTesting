@@ -26,6 +26,8 @@ export class AnthropicService {
       enableThinking?: boolean;
     } = {}
   ) {
+    console.log('🚀 createMessage called with model:', options.model);
+    console.log('📝 Messages count:', messages.length);
     const {
       model = 'claude-3-5-sonnet-20241022',
       maxTokens = 4096,
@@ -242,4 +244,15 @@ export class AnthropicService {
   }
 }
 
-export const anthropicService = new AnthropicService();
+// Lazy instantiation to ensure environment variables are loaded first
+let _anthropicService: AnthropicService | null = null;
+
+export function getAnthropicService(): AnthropicService {
+  if (!_anthropicService) {
+    console.log('🔧 Creating new AnthropicService instance');
+    console.log('🔑 API Key present:', !!process.env.ANTHROPIC_API_KEY);
+    _anthropicService = new AnthropicService();
+    console.log('✅ AnthropicService created successfully');
+  }
+  return _anthropicService;
+}

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { anthropicService } from '../services/anthropic';
+import { getAnthropicService } from '../services/anthropic';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
@@ -52,6 +52,8 @@ router.delete('/conversations/:id', (req, res) => {
 // Send a message (non-streaming)
 router.post('/conversations/:id/messages', async (req, res) => {
   try {
+    console.log('📨 Received message request:', req.params.id, req.body);
+    
     const conversation = conversations.get(req.params.id);
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found' });
@@ -68,11 +70,12 @@ router.post('/conversations/:id/messages', async (req, res) => {
     } = req.body;
 
     // Format user message with attachments
-    const userMessage = anthropicService.formatUserMessage(message, attachments);
+    const userMessage = getAnthropicService().formatUserMessage(message, attachments);
     conversation.messages.push(userMessage);
 
     // Generate response
-    const response = await anthropicService.createMessage(
+    console.log('🤖 Calling Anthropic API with model:', model);
+    const response = await getAnthropicService().createMessage(
       conversation.messages,
       {
         model,
@@ -82,6 +85,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
         enableThinking
       }
     );
+    console.log('✅ Anthropic API response received');
 
     // Add assistant response to conversation
     const assistantMessage = {
@@ -96,7 +100,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
 
     // Calculate and update cost
     if (response.usage) {
-      const cost = anthropicService.calculateCost(response.usage, model);
+              const cost = getAnthropicService().calculateCost(response.usage, model);
       conversation.totalCost += cost.totalCost;
       
       res.json({
@@ -119,7 +123,8 @@ router.post('/conversations/:id/messages', async (req, res) => {
         : 'Chat Conversation';
     }
   } catch (error: any) {
-    console.error('Chat error:', error);
+    console.error('❌ Chat error:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ 
       error: error.message || 'Failed to process message',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
@@ -129,7 +134,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
 
 // Get available models
 router.get('/models', (req, res) => {
-  res.json(anthropicService.getAvailableModels());
+  res.json(getAnthropicService().getAvailableModels());
 });
 
 // Export conversation as markdown

@@ -1,7 +1,13 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+// Load environment variables
+// In development, load from .env file in server directory
+// In production, environment variables are set by the hosting platform
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: path.join(__dirname, '../../.env') });
+}
 
 // Create connection pool
 export const pool = new Pool({

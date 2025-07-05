@@ -1,6 +1,6 @@
-import { WebSocket } from 'ws';
+import { Server as IOServer, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { anthropicService } from './anthropic';
+import { getAnthropicService } from './anthropic';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
 
 interface WSMessage {
@@ -11,7 +11,7 @@ interface WSMessage {
 
 interface ActiveConnection {
   id: string;
-  ws: WebSocket;
+  socket: Socket;
   conversationId?: string;
   isAlive: boolean;
 }
@@ -19,75 +19,65 @@ interface ActiveConnection {
 class WebSocketService {
   private connections: Map<string, ActiveConnection> = new Map();
 
-  handleConnection(ws: WebSocket) {
-    const connectionId = uuidv4();
+  handleConnection(socket: Socket) {
+    const connectionId = socket.id;
     const connection: ActiveConnection = {
       id: connectionId,
-      ws,
+      socket,
       isAlive: true
     };
 
     this.connections.set(connectionId, connection);
-    console.log(`New WebSocket connection: ${connectionId}`);
+    console.log(`New Socket.IO connection: ${connectionId}`);
 
     // Send welcome message
-    this.sendMessage(ws, {
-      type: 'chat',
-      data: {
-        role: 'system',
-        content: 'Connected to Claude Clone. Ready for streaming chat.'
-      }
-    });
+    // socket.emit('message', {
+    //   type: 'chat',
+    //   data: {
+    //     role: 'system',
+    //     content: 'Connected to Claude Clone. Ready for streaming chat.'
+    //   }
+    // });
 
     // Handle messages
-    ws.on('message', async (message: Buffer) => {
+    socket.on('message', async (data: WSMessage) => {
       try {
-        const data = JSON.parse(message.toString()) as WSMessage;
-        await this.handleMessage(connectionId, data);
+        console.log('📨 Socket.IO message received:', data);
+        await this.handleMessage(socket, data);
       } catch (error: unknown) {
-        console.error('WebSocket message error:', error as Error);
-        this.sendError(ws, 'Invalid message format');
+        console.error('Socket.IO message error:', error as Error);
+        this.sendError(socket, 'Invalid message format');
       }
-    });
-
-    // Handle pong for keep-alive
-    ws.on('pong', () => {
-      connection.isAlive = true;
     });
 
     // Handle disconnect
-    ws.on('close', () => {
+    socket.on('disconnect', () => {
       this.connections.delete(connectionId);
-      console.log(`WebSocket disconnected: ${connectionId}`);
-    });
-
-    // Handle errors
-    ws.on('error', (error: unknown) => {
-      console.error(`WebSocket error for ${connectionId}:`, error as Error);
-      this.connections.delete(connectionId);
+      console.log(`Socket.IO disconnected: ${connectionId}`);
     });
   }
 
-  private async handleMessage(connectionId: string, message: WSMessage) {
-    const connection = this.connections.get(connectionId);
+  private async handleMessage(socket: Socket, message: WSMessage) {
+    const connection = this.connections.get(socket.id);
     if (!connection) return;
 
     switch (message.type) {
       case 'ping':
-        this.sendMessage(connection.ws, { type: 'pong' });
+        this.sendMessage(socket, { type: 'pong' });
         break;
 
       case 'chat':
-        await this.handleChatMessage(connection, message.data);
+        await this.handleChatMessage(socket, message.data);
         break;
 
       default:
-        this.sendError(connection.ws, `Unknown message type: ${message.type}`);
+        this.sendError(socket, `Unknown message type: ${message.type}`);
     }
   }
 
-  private async handleChatMessage(connection: ActiveConnection, data: any) {
+  private async handleChatMessage(socket: Socket, data: any) {
     try {
+      console.log('🤖 Processing chat message:', data);
       const {
         messages,
         model = 'claude-3-5-sonnet-20241022',
@@ -97,8 +87,14 @@ class WebSocketService {
         enableThinking = false
       } = data;
 
+      // Clean messages to only include fields that Anthropic API accepts
+      const cleanMessages = messages.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
       // Start streaming response
-      const stream = anthropicService.streamMessage(messages, {
+      const stream = getAnthropicService().streamMessage(cleanMessages, {
         model,
         temperature,
         maxTokens,
@@ -114,7 +110,7 @@ class WebSocketService {
       for await (const event of stream) {
         if (event.type === 'message_start') {
           // Send initial message
-          this.sendMessage(connection.ws, {
+          this.sendMessage(socket, {
             type: 'chat',
             data: {
               role: 'assistant',
@@ -134,7 +130,7 @@ class WebSocketService {
             if (isThinking) {
               thinkingContent += delta.text;
               // Send thinking updates
-              this.sendMessage(connection.ws, {
+              this.sendMessage(socket, {
                 type: 'thinking',
                 data: {
                   content: delta.text,
@@ -144,7 +140,7 @@ class WebSocketService {
             } else {
               fullContent += delta.text;
               // Send content updates
-              this.sendMessage(connection.ws, {
+              this.sendMessage(socket, {
                 type: 'chat',
                 data: {
                   role: 'assistant',
@@ -163,15 +159,15 @@ class WebSocketService {
           // Send final message with usage info
           const usage = (event as any).message?.usage;
           if (usage) {
-            const cost = anthropicService.calculateCost(usage, model);
-            this.sendMessage(connection.ws, {
+            const cost = getAnthropicService().calculateCost(usage, model);
+            this.sendMessage(socket, {
               type: 'usage',
               data: cost
             });
           }
 
           // Send completion signal
-          this.sendMessage(connection.ws, {
+          this.sendMessage(socket, {
             type: 'chat',
             data: {
               role: 'assistant',
@@ -185,18 +181,16 @@ class WebSocketService {
     } catch (error: unknown) {
       console.error('Chat message error:', error as Error);
       const message = error instanceof Error ? error.message : 'Failed to process chat message';
-      this.sendError(connection.ws, message);
+      this.sendError(socket, message);
     }
   }
 
-  private sendMessage(ws: WebSocket, message: WSMessage) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(message));
-    }
+  private sendMessage(socket: Socket, message: WSMessage) {
+    socket.emit('message', message);
   }
 
-  private sendError(ws: WebSocket, error: string) {
-    this.sendMessage(ws, {
+  private sendError(socket: Socket, error: string) {
+    this.sendMessage(socket, {
       type: 'error',
       data: { error }
     });
@@ -207,22 +201,21 @@ class WebSocketService {
     setInterval(() => {
       this.connections.forEach((connection, id) => {
         if (!connection.isAlive) {
-          connection.ws.terminate();
+          connection.socket.disconnect();
           this.connections.delete(id);
           return;
         }
 
         connection.isAlive = false;
-        connection.ws.ping();
+        connection.socket.emit('ping');
       });
     }, 30000); // 30 seconds
   }
 }
 
-export const webSocketService = new WebSocketService();
-
-export function handleWebSocketConnection(ws: WebSocket) {
-  webSocketService.handleConnection(ws);
+const webSocketService = new WebSocketService();
+export function handleWebSocketConnection(socket: Socket) {
+  webSocketService.handleConnection(socket);
 }
 
 // Start keep-alive when service is initialized

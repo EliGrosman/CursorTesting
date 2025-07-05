@@ -2,11 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
-import { WebSocketServer } from 'ws';
+import { Server as SocketIOServer } from 'socket.io';
 import path from 'path';
 
 // Load environment variables
-dotenv.config();
+// In development, load from .env file in server directory
+// In production, environment variables are set by the hosting platform
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: path.join(__dirname, '../.env') });
+}
 
 // Import routes
 import chatRoutes from './routes/chat';
@@ -18,7 +22,15 @@ import { handleWebSocketConnection } from './services/websocket';
 
 const app = express();
 const httpServer = createServer(app);
-const wss = new WebSocketServer({ server: httpServer });
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ],
+    credentials: true
+  }
+});
 
 // Enhanced CORS configuration
 const corsOptions = {
@@ -58,8 +70,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// WebSocket handling
-wss.on('connection', handleWebSocketConnection);
+// WebSocket handling (Socket.IO)
+io.on('connection', handleWebSocketConnection);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

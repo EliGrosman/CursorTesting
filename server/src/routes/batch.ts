@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
-import { anthropicService } from '../services/anthropic';
+import { getAnthropicService } from '../services/anthropic';
 import { query, queryOne } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,7 +33,7 @@ router.post('/jobs', authenticate, async (req: AuthRequest, res) => {
     );
 
     // Submit to Anthropic batch API
-    const batchResponse = await anthropicService.createBatch(requests);
+    const batchResponse = await getAnthropicService().createBatch(requests);
 
     // Update job with batch ID
     await query(
@@ -94,7 +94,7 @@ router.get('/jobs/:id', authenticate, async (req: AuthRequest, res) => {
 
     // If job is pending, check status from Anthropic
     if (job.status === 'pending' && job.batch_id) {
-      const batchStatus = await anthropicService.getBatchStatus(job.batch_id);
+      const batchStatus = await getAnthropicService().getBatchStatus(job.batch_id);
       
       // Update job status
       if (batchStatus.status === 'completed') {
@@ -217,7 +217,7 @@ router.post('/jobs/:id/process', authenticate, async (req: AuthRequest, res) => 
           result.model,
           result.response.usage?.input_tokens,
           result.response.usage?.output_tokens,
-          result.response.usage ? anthropicService.calculateCost(result.response.usage, result.model).totalCost : 0
+          result.response.usage ? getAnthropicService().calculateCost(result.response.usage, result.model).totalCost : 0
         ]
       );
 
