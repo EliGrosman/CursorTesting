@@ -32,8 +32,8 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
     );
 
     // Build folder tree structure
-    const folderMap = new Map();
-    const rootFolders = [];
+    const folderMap: Map<string, any> = new Map<string, any>();
+    const rootFolders: any[] = [];
 
     folders.forEach(folder => {
       folderMap.set(folder.id, { ...folder, children: [] });

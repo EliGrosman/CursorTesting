@@ -127,7 +127,7 @@ export class SecureAnthropicService {
   ) {
     const stream = await this.createMessage(userId, messages, { ...options, stream: true });
 
-    for await (const event of stream as AsyncIterable<MessageStreamEvent>) {
+    for await (const event of stream as unknown as AsyncIterable<MessageStreamEvent>) {
       yield event;
     }
   }

@@ -44,8 +44,8 @@ class WebSocketService {
       try {
         const data = JSON.parse(message.toString()) as WSMessage;
         await this.handleMessage(connectionId, data);
-      } catch (error) {
-        console.error('WebSocket message error:', error);
+      } catch (error: unknown) {
+        console.error('WebSocket message error:', error as Error);
         this.sendError(ws, 'Invalid message format');
       }
     });
@@ -62,8 +62,8 @@ class WebSocketService {
     });
 
     // Handle errors
-    ws.on('error', (error) => {
-      console.error(`WebSocket error for ${connectionId}:`, error);
+    ws.on('error', (error: unknown) => {
+      console.error(`WebSocket error for ${connectionId}:`, error as Error);
       this.connections.delete(connectionId);
     });
   }
@@ -182,9 +182,10 @@ class WebSocketService {
           });
         }
       }
-    } catch (error: any) {
-      console.error('Chat message error:', error);
-      this.sendError(connection.ws, error.message || 'Failed to process chat message');
+    } catch (error: unknown) {
+      console.error('Chat message error:', error as Error);
+      const message = error instanceof Error ? error.message : 'Failed to process chat message';
+      this.sendError(connection.ws, message);
     }
   }
 
