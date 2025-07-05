@@ -1,5 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Chat from './pages/Chat';
 import Settings from './pages/Settings';
 import { useThemeStore } from './stores/themeStore';
@@ -19,7 +22,16 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      {/* Public routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      {/* Protected routes */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
         <Route index element={<Chat />} />
         <Route path="chat/:conversationId?" element={<Chat />} />
         <Route path="settings" element={<Settings />} />
