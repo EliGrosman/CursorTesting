@@ -107,7 +107,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-const PORT = process.env.PORT || 10000;
+const PORT = parseInt(process.env.PORT || '10000', 10);
 
 // Handle server startup errors
 process.on('uncaughtException', (error) => {
