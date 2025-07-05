@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Save, Brain, Zap, MessageSquare, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { useState } from 'react';
+import { Save, Brain, Zap, MessageSquare, Key, Shield, Moon, Sun } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
+import { useThemeStore } from '../stores/themeStore';
+import { useAuthStore } from '../stores/authStore';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 interface ApiKey {
   id: string;
   name: string;
+  lastUsedAt: string | null;
+  expiresAt: string | null;
   isActive: boolean;
   createdAt: string;
-  lastUsedAt?: string;
+  isExpired?: boolean;
 }
 
 export default function Settings() {
@@ -21,169 +26,35 @@ export default function Settings() {
     setEnableThinking,
   } = useChatStore();
 
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeyName, setApiKeyName] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState('');
+  const { theme, setTheme } = useThemeStore();
+  const { user } = useAuthStore();
 
-  // Load API keys on component mount
-  useEffect(() => {
-    loadApiKeys();
-  }, []);
-
-  const loadApiKeys = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return;
-
-      const response = await fetch('/api/api-keys', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const keys = await response.json();
-        setApiKeys(keys);
-      }
-    } catch (error) {
-      console.error('Error loading API keys:', error);
-    }
-  };
+  const [newApiKeyName, setNewApiKeyName] = useState('');
+  const [newApiKey, setNewApiKey] = useState('');
+  const [showNewApiKey, setShowNewApiKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveApiKey = async () => {
-    if (!apiKey.trim()) {
-      toast.error('Please enter an API key');
+    if (!newApiKeyName.trim() || !newApiKey.trim()) {
+      toast.error('Please enter both name and API key');
       return;
     }
 
-    setIsLoading(true);
+    setIsSaving(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        toast.error('Please log in to save API keys');
-        return;
-      }
-
-      const response = await fetch('/api/api-keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          apiKey: apiKey.trim(),
-          name: apiKeyName.trim() || 'My API Key',
-        }),
+      await api.post('/apikeys', {
+        name: newApiKeyName,
+        anthropicKey: newApiKey,
       });
-
-      if (response.ok) {
-        toast.success('API key saved successfully');
-        setApiKey('');
-        setApiKeyName('');
-        loadApiKeys();
-      } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to save API key');
-      }
-    } catch (error) {
-      console.error('Error saving API key:', error);
-      toast.error('Failed to save API key');
+      
+      toast.success('API key saved securely');
+      setNewApiKeyName('');
+      setNewApiKey('');
+      setShowNewApiKey(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to save API key');
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteApiKey = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this API key?')) return;
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return;
-
-      const response = await fetch(`/api/api-keys/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        toast.success('API key deleted');
-        loadApiKeys();
-      } else {
-        toast.error('Failed to delete API key');
-      }
-    } catch (error) {
-      console.error('Error deleting API key:', error);
-      toast.error('Failed to delete API key');
-    }
-  };
-
-  const handleEditApiKey = async (id: string) => {
-    if (!editingName.trim()) return;
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return;
-
-      const response = await fetch(`/api/api-keys/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: editingName.trim(),
-        }),
-      });
-
-      if (response.ok) {
-        toast.success('API key updated');
-        setEditingKey(null);
-        setEditingName('');
-        loadApiKeys();
-      } else {
-        toast.error('Failed to update API key');
-      }
-    } catch (error) {
-      console.error('Error updating API key:', error);
-      toast.error('Failed to update API key');
-    }
-  };
-
-  const handleTestApiKey = async () => {
-    if (!apiKey.trim()) {
-      toast.error('Please enter an API key');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/api-keys/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          apiKey: apiKey.trim(),
-        }),
-      });
-
-      const result = await response.json();
-      if (result.valid) {
-        toast.success('API key is valid!');
-      } else {
-        toast.error(result.error || 'Invalid API key');
-      }
-    } catch (error) {
-      console.error('Error testing API key:', error);
-      toast.error('Failed to test API key');
-    } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -192,43 +63,71 @@ export default function Settings() {
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-        {/* API Configuration */}
+        {/* User Info */}
+        {user && (
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Account
+            </h2>
+            <div className="space-y-2 text-sm">
+              <p><span className="font-medium">Email:</span> {user.email}</p>
+              <p><span className="font-medium">Name:</span> {user.name}</p>
+            </div>
+          </div>
+        )}
+
+        {/* API Key Configuration */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            API Configuration
+            <Key className="h-5 w-5" />
+            API Key Management
           </h2>
           
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Key Name
+              </label>
+              <input
+                type="text"
+                value={newApiKeyName}
+                onChange={(e) => setNewApiKeyName(e.target.value)}
+                placeholder="e.g., Production Key"
+                className="w-full input-primary"
+              />
+            </div>
+            
             <div>
               <label className="block text-sm font-medium mb-2">
                 Anthropic API Key
               </label>
               <div className="flex gap-2">
                 <input
-                  type={showApiKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  type={showNewApiKey ? 'text' : 'password'}
+                  value={newApiKey}
+                  onChange={(e) => setNewApiKey(e.target.value)}
                   placeholder="sk-ant-api..."
                   className="flex-1 input-primary"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
+                  onClick={() => setShowNewApiKey(!showNewApiKey)}
                   className="btn-secondary"
                 >
-                  {showApiKey ? 'Hide' : 'Show'}
+                  {showNewApiKey ? 'Hide' : 'Show'}
                 </button>
                 <button
                   onClick={handleSaveApiKey}
+                  disabled={isSaving}
                   className="btn-primary flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  Save
+                  {isSaving ? 'Saving...' : 'Save'}
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Note: In production, API keys should be stored securely on the backend.
+                Your API key is encrypted and stored securely. You'll need to enter your password to retrieve it.
               </p>
             </div>
           </div>
@@ -283,7 +182,7 @@ export default function Settings() {
         </div>
 
         {/* Advanced Features */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Brain className="h-5 w-5" />
             Advanced Features
@@ -300,10 +199,54 @@ export default function Settings() {
               <div>
                 <span className="font-medium">Enable Extended Thinking</span>
                 <p className="text-sm text-gray-500">
-                  Shows Claude's reasoning process (available for Sonnet models)
+                  Shows Claude's reasoning process (available for Claude 4 and Sonnet models)
                 </p>
               </div>
             </label>
+          </div>
+        </div>
+
+        {/* Appearance */}
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            Appearance
+          </h2>
+          
+          <div className="flex gap-4">
+            <button
+              onClick={() => setTheme('light')}
+              className={`flex-1 p-3 rounded-lg border-2 transition-colors ${
+                theme === 'light'
+                  ? 'border-claude-accent bg-claude-accent/10'
+                  : 'border-gray-300 dark:border-gray-600'
+              }`}
+            >
+              <Sun className="h-5 w-5 mx-auto mb-1" />
+              <span className="text-sm">Light</span>
+            </button>
+            <button
+              onClick={() => setTheme('dark')}
+              className={`flex-1 p-3 rounded-lg border-2 transition-colors ${
+                theme === 'dark'
+                  ? 'border-claude-accent bg-claude-accent/10'
+                  : 'border-gray-300 dark:border-gray-600'
+              }`}
+            >
+              <Moon className="h-5 w-5 mx-auto mb-1" />
+              <span className="text-sm">Dark</span>
+            </button>
+            <button
+              onClick={() => setTheme('system')}
+              className={`flex-1 p-3 rounded-lg border-2 transition-colors ${
+                theme === 'system'
+                  ? 'border-claude-accent bg-claude-accent/10'
+                  : 'border-gray-300 dark:border-gray-600'
+              }`}
+            >
+              <MessageSquare className="h-5 w-5 mx-auto mb-1" />
+              <span className="text-sm">System</span>
+            </button>
           </div>
         </div>
 
@@ -313,6 +256,8 @@ export default function Settings() {
             Pricing Information (Pay-as-you-go)
           </h3>
           <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <p>• Claude 4 Sonnet: $4/1M input tokens, $20/1M output tokens</p>
+            <p>• Claude 4 Opus: $20/1M input tokens, $100/1M output tokens</p>
             <p>• Claude 3.5 Sonnet: $3/1M input tokens, $15/1M output tokens</p>
             <p>• Claude 3 Opus: $15/1M input tokens, $75/1M output tokens</p>
             <p>• Claude 3 Haiku: $0.25/1M input tokens, $1.25/1M output tokens</p>
