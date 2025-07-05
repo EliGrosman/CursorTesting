@@ -1,4 +1,4 @@
-import express from 'express';
+const express = require('express');
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
@@ -74,7 +74,7 @@ app.get('/api/health', (req, res) => {
 io.on('connection', handleWebSocketConnection);
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: any, res: any, next: any) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
