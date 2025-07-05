@@ -15,6 +15,15 @@ const api = axios.create({
   },
 });
 
+// Add auth token to requests
+api.interceptors.request.use((config: any) => {
+  const token = localStorage.getItem('claude_auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Types
 export interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -243,6 +252,38 @@ export const searchApi = {
         .catch(reject);
     });
   },
+};
+
+// Auth API
+export const authApi = {
+  async login(email: string, password: string): Promise<{ token: string; user: any }> {
+    const response = await api.post('/auth/login', { email, password });
+    const { token, user } = response.data;
+    
+    // Store token
+    localStorage.setItem('claude_auth_token', token);
+    
+    return { token, user };
+  },
+
+  async register(email: string, password: string, name: string): Promise<{ token: string; user: any }> {
+    const response = await api.post('/auth/register', { email, password, name });
+    const { token, user } = response.data;
+    
+    // Store token
+    localStorage.setItem('claude_auth_token', token);
+    
+    return { token, user };
+  },
+
+  async me(): Promise<any> {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
+
+  logout() {
+    localStorage.removeItem('claude_auth_token');
+  }
 };
 
 // File API
