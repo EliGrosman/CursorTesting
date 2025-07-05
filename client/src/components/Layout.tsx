@@ -9,11 +9,13 @@ import {
   Moon, 
   Sun, 
   Download,
-  Trash2
+  Trash2,
+  LogOut
 } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useThemeStore } from '../stores/themeStore';
 import { conversationApi } from '../services/api';
+import { authService } from '../services/auth';
 import toast from 'react-hot-toast';
 
 import clsx from 'clsx';
@@ -94,6 +96,15 @@ export default function Layout() {
       toast.success('Conversation exported');
     } catch (error) {
       toast.error('Failed to export conversation');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Failed to logout');
     }
   };
 
@@ -182,6 +193,13 @@ export default function Layout() {
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-red-600"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
             </button>
           </div>
         </div>
