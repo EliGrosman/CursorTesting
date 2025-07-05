@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
@@ -13,13 +13,19 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Import routes
+import authRoutes from './routes/auth';
 import chatRoutes from './routes/chat';
 import searchRoutes from './routes/search';
 import fileRoutes from './routes/file';
-import apiKeyRoutes from './routes/api-keys';
+import apiKeyRoutes from './routes/apikeys';
+import folderRoutes from './routes/folders';
+import batchRoutes from './routes/batch';
 
 // Import WebSocket handler
 import { handleWebSocketConnection } from './services/websocket';
+
+// Import database initialization
+import { initDatabase } from './db';
 
 const app = express();
 const httpServer = createServer(app);
@@ -62,14 +68,31 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/files', fileRoutes);
-app.use('/api', apiKeyRoutes);
+app.use('/api/apikeys', apiKeyRoutes);
+app.use('/api/folders', folderRoutes);
+app.use('/api/batch', batchRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    port: PORT
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Claude Clone API Server',
+    health: '/api/health',
+    environment: process.env.NODE_ENV
+  });
 });
 
 // WebSocket handling (Socket.IO)
@@ -84,10 +107,43 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌐 WebSocket server ready`);
-  console.log(`📁 Environment: ${process.env.NODE_ENV}`);
+// Handle server startup errors
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
 });
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Initialize database before starting server
+async function startServer() {
+  try {
+    // Only initialize database if DATABASE_URL is provided
+    if (process.env.DATABASE_URL) {
+      await initDatabase();
+    } else {
+      console.log('⚠️  No DATABASE_URL provided, running without database');
+    }
+    
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+      console.log(`🌐 WebSocket server ready`);
+      console.log(`📁 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🏥 Health check available at: http://0.0.0.0:${PORT}/api/health`);
+    }).on('error', (error: any) => {
+      console.error('Server failed to start:', error);
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error('Failed to initialize server:', error);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
