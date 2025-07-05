@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@types/date-fns": "^2.5.3",
+    "@types/react-dropzone": "^4.2.2"
+  }
+}
