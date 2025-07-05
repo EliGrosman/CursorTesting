@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Brain, Zap, MessageSquare, Key, Shield, Moon, Sun, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Save, Zap, MessageSquare, Key, Shield, Moon, Sun, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useThemeStore } from '../stores/themeStore';
 import { useAuthStore } from '../stores/authStore';
