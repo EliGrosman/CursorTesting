@@ -29,7 +29,7 @@ export class AnthropicService {
     console.log('🚀 createMessage called with model:', options.model);
     console.log('📝 Messages count:', messages.length);
     const {
-      model = 'claude-3-5-sonnet-20241022',
+      model = 'claude-sonnet-4-20250514',
       maxTokens = 4096,
       temperature = 0.7,
       systemPrompt,
@@ -54,10 +54,10 @@ export class AnthropicService {
     }
 
     // Enable thinking mode for extended reasoning
-    if (enableThinking && model.includes('sonnet')) {
-      requestParams.metadata = {
-        ...requestParams.metadata,
-        thinking_mode: 'enabled'
+    if (enableThinking && (model.includes('sonnet') || model.includes('opus-4'))) {
+      requestParams.thinking = {
+        type: 'enabled',
+        budget_tokens: 10000
       };
     }
 

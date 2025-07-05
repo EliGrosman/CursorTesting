@@ -20,6 +20,7 @@ import fileRoutes from './routes/file';
 import apiKeyRoutes from './routes/apikeys';
 import folderRoutes from './routes/folders';
 import batchRoutes from './routes/batch';
+import artifactRoutes from './routes/artifacts';
 
 // Import WebSocket handler
 import { handleWebSocketConnection } from './services/websocket';
@@ -75,6 +76,7 @@ app.use('/api/files', fileRoutes);
 app.use('/api/apikeys', apiKeyRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/batch', batchRoutes);
+app.use('/api/artifacts', artifactRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

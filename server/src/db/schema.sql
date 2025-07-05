@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS conversations (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     folder_id UUID REFERENCES folders(id) ON DELETE SET NULL,
     title VARCHAR(500) NOT NULL,
-    model VARCHAR(100) NOT NULL DEFAULT 'claude-3-5-sonnet-20241022',
+    model VARCHAR(100) NOT NULL DEFAULT 'claude-sonnet-4-20250514',
     total_cost DECIMAL(10, 6) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -57,6 +57,19 @@ CREATE TABLE IF NOT EXISTS attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Artifacts table for Claude's artifact feature
+CREATE TABLE IF NOT EXISTS artifacts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL, -- 'code', 'document', 'image', 'data', etc.
+    mime_type VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    file_extension VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Batch jobs table for batch API support
 CREATE TABLE IF NOT EXISTS batch_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -73,7 +86,7 @@ CREATE TABLE IF NOT EXISTS batch_jobs (
 CREATE TABLE IF NOT EXISTS user_preferences (
     user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     theme VARCHAR(20) DEFAULT 'light',
-    default_model VARCHAR(100) DEFAULT 'claude-3-5-sonnet-20241022',
+    default_model VARCHAR(100) DEFAULT 'claude-sonnet-4-20250514',
     temperature DECIMAL(2, 1) DEFAULT 0.7,
     max_tokens INTEGER DEFAULT 4096,
     enable_thinking BOOLEAN DEFAULT false,
@@ -125,4 +138,7 @@ CREATE TRIGGER update_conversations_updated_at BEFORE UPDATE ON conversations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferences
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_artifacts_updated_at BEFORE UPDATE ON artifacts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

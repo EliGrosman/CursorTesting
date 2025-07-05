@@ -8,6 +8,8 @@ import ChatInput from '../components/ChatInput';
 import ModelSelector from '../components/ModelSelector';
 import ThinkingIndicator from '../components/ThinkingIndicator';
 import ResearchModal from '../components/ResearchModal';
+import ArtifactsPanel from '../components/ArtifactsPanel';
+import ArtifactsToggle from '../components/ArtifactsToggle';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -17,6 +19,8 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [showResearch, setShowResearch] = useState(false);
+  const [showArtifacts, setShowArtifacts] = useState(false);
+  const [artifactCount, setArtifactCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const {
@@ -42,6 +46,7 @@ export default function Chat() {
   useEffect(() => {
     if (conversationId) {
       loadConversation(conversationId);
+      loadArtifactCount(conversationId);
     } else {
       createNewConversation();
     }
@@ -87,6 +92,18 @@ export default function Chat() {
     }
   };
 
+  const loadArtifactCount = async (convId: string) => {
+    try {
+      const response = await fetch(`/api/artifacts/conversation/${convId}`);
+      if (response.ok) {
+        const artifacts = await response.json();
+        setArtifactCount(artifacts.length);
+      }
+    } catch (error) {
+      console.error('Failed to load artifact count:', error);
+    }
+  };
+
   const handleWebSocketMessage = (data: any) => {
     switch (data.type) {
       case 'chat':
@@ -117,6 +134,14 @@ export default function Chat() {
           const newTotalCost = currentConversation.totalCost + data.data.totalCost;
           // Update in store
           toast.success(`Cost: $${data.data.totalCost.toFixed(4)} (Total: $${newTotalCost.toFixed(4)})`);
+        }
+        break;
+      
+      case 'artifact':
+        // Handle new artifacts
+        if (data.data.artifacts && data.data.artifacts.length > 0) {
+          setArtifactCount(prev => prev + data.data.artifacts.length);
+          toast.success(`Created ${data.data.artifacts.length} artifact${data.data.artifacts.length > 1 ? 's' : ''}`);
         }
         break;
       
@@ -175,6 +200,7 @@ export default function Chat() {
           maxTokens,
           enableThinking,
           attachments: processedAttachments,
+          conversationId: currentConversation.id,
         },
       });
     } catch (error) {
@@ -224,6 +250,28 @@ export default function Chat() {
           >
             <Search className="h-5 w-5" />
           </button>
+          
+          {/* Artifacts Toggle */}
+          <ArtifactsToggle
+            isOpen={showArtifacts}
+            onToggle={() => setShowArtifacts(!showArtifacts)}
+            artifactCount={artifactCount}
+          />
+          
+          {/* Thinking Mode Toggle */}
+          <button
+            onClick={() => useChatStore.getState().setEnableThinking(!enableThinking)}
+            className={clsx(
+              'p-2 rounded-lg transition-colors',
+              enableThinking
+                ? 'bg-claude-accent text-white hover:bg-claude-accent-hover'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
+            )}
+            title={enableThinking ? 'Disable thinking mode' : 'Enable thinking mode'}
+          >
+            <Brain className="h-5 w-5" />
+          </button>
+          
           <ModelSelector />
         </div>
       </div>
@@ -295,6 +343,15 @@ export default function Chat() {
         <ResearchModal
           isOpen={showResearch}
           onClose={() => setShowResearch(false)}
+        />
+      )}
+
+      {/* Artifacts Panel */}
+      {showArtifacts && currentConversation && (
+        <ArtifactsPanel
+          isOpen={showArtifacts}
+          onClose={() => setShowArtifacts(false)}
+          conversationId={currentConversation.id}
         />
       )}
     </div>

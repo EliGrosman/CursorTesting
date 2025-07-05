@@ -193,7 +193,7 @@ router.post('/jobs/:id/process', authenticate, async (req: AuthRequest, res) => 
           `INSERT INTO conversations (user_id, title, model) 
            VALUES ($1, $2, $3) 
            RETURNING *`,
-          [req.user!.id, `Batch: ${result.custom_id}`, result.model || 'claude-3-5-sonnet-20241022']
+          [req.user!.id, `Batch: ${result.custom_id}`, result.model || 'claude-sonnet-4-20250514']
         );
         convId = newConv.id;
       }

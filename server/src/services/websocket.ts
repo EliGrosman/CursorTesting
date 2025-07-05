@@ -6,7 +6,7 @@ import { queryOne } from '../db';
 import jwt from 'jsonwebtoken';
 
 interface WSMessage {
-  type: 'chat' | 'ping' | 'pong' | 'error' | 'usage' | 'thinking';
+  type: 'chat' | 'ping' | 'pong' | 'error' | 'usage' | 'thinking' | 'artifact';
   conversationId?: string;
   data?: any;
 }
@@ -114,12 +114,13 @@ class WebSocketService {
 
       const {
         messages,
-        model = 'claude-3-5-sonnet-20241022',
+        model = 'claude-sonnet-4-20250514',
         temperature = 0.7,
         maxTokens = 4096,
         systemPrompt,
         enableThinking = false,
-        apiKey // Allow direct API key for websocket connections
+        apiKey, // Allow direct API key for websocket connections
+        conversationId
       } = data;
 
       // Clean messages to only include fields that Anthropic API accepts
@@ -167,6 +168,7 @@ class WebSocketService {
       let fullContent = '';
       let thinkingContent = '';
       let isThinking = false;
+      let artifacts: any[] = [];
 
       for await (const event of stream) {
         if (event.type === 'message_start') {
@@ -227,6 +229,21 @@ class WebSocketService {
             });
           }
 
+          // Check for artifacts in the content
+          if (fullContent && connection.userId) {
+            const detectedArtifacts = this.detectArtifacts(fullContent, data.conversationId);
+            if (detectedArtifacts.length > 0) {
+              for (const artifact of detectedArtifacts) {
+                try {
+                  await this.createArtifact(connection.userId, artifact);
+                  artifacts.push(artifact);
+                } catch (error) {
+                  console.error('Failed to create artifact:', error);
+                }
+              }
+            }
+          }
+
           // Send completion signal
           this.sendMessage(socket, {
             type: 'chat',
@@ -237,6 +254,14 @@ class WebSocketService {
               messageId: (event as any).message?.id
             }
           });
+
+          // Send artifacts if any were created
+          if (artifacts.length > 0) {
+            this.sendMessage(socket, {
+              type: 'artifact',
+              data: { artifacts }
+            });
+          }
         }
       }
     } catch (error: unknown) {
@@ -255,6 +280,141 @@ class WebSocketService {
       type: 'error',
       data: { error }
     });
+  }
+
+  private detectArtifacts(content: string, conversationId: string): any[] {
+    const artifacts: any[] = [];
+    
+    // Detect code blocks
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    let match;
+    while ((match = codeBlockRegex.exec(content)) !== null) {
+      const language = match[1] || 'text';
+      const code = match[2];
+      const filename = this.generateFilename(language, code);
+      
+      artifacts.push({
+        conversationId,
+        name: filename,
+        type: 'code',
+        mimeType: this.getMimeType(language),
+        content: code,
+        fileExtension: this.getFileExtension(language)
+      });
+    }
+
+    // Detect markdown documents
+    const markdownRegex = /^#\s+(.+)$/gm;
+    if (markdownRegex.test(content) && !codeBlockRegex.test(content)) {
+      artifacts.push({
+        conversationId,
+        name: 'document.md',
+        type: 'document',
+        mimeType: 'text/markdown',
+        content: content,
+        fileExtension: '.md'
+      });
+    }
+
+    // Detect JSON data
+    const jsonRegex = /```json\n([\s\S]*?)```/g;
+    while ((match = jsonRegex.exec(content)) !== null) {
+      try {
+        JSON.parse(match[1]);
+        artifacts.push({
+          conversationId,
+          name: 'data.json',
+          type: 'data',
+          mimeType: 'application/json',
+          content: match[1],
+          fileExtension: '.json'
+        });
+      } catch (e) {
+        // Not valid JSON, skip
+      }
+    }
+
+    return artifacts;
+  }
+
+  private generateFilename(language: string, code: string): string {
+    const extensions: Record<string, string> = {
+      'javascript': 'script.js',
+      'js': 'script.js',
+      'typescript': 'script.ts',
+      'ts': 'script.ts',
+      'python': 'script.py',
+      'py': 'script.py',
+      'html': 'index.html',
+      'css': 'styles.css',
+      'json': 'data.json',
+      'xml': 'data.xml',
+      'sql': 'query.sql',
+      'bash': 'script.sh',
+      'sh': 'script.sh',
+      'text': 'document.txt'
+    };
+    
+    return extensions[language.toLowerCase()] || `file.${language}`;
+  }
+
+  private getMimeType(language: string): string {
+    const mimeTypes: Record<string, string> = {
+      'javascript': 'text/javascript',
+      'js': 'text/javascript',
+      'typescript': 'text/typescript',
+      'ts': 'text/typescript',
+      'python': 'text/x-python',
+      'py': 'text/x-python',
+      'html': 'text/html',
+      'css': 'text/css',
+      'json': 'application/json',
+      'xml': 'application/xml',
+      'sql': 'text/x-sql',
+      'bash': 'text/x-sh',
+      'sh': 'text/x-sh',
+      'text': 'text/plain'
+    };
+    
+    return mimeTypes[language.toLowerCase()] || 'text/plain';
+  }
+
+  private getFileExtension(language: string): string {
+    const extensions: Record<string, string> = {
+      'javascript': '.js',
+      'js': '.js',
+      'typescript': '.ts',
+      'ts': '.ts',
+      'python': '.py',
+      'py': '.py',
+      'html': '.html',
+      'css': '.css',
+      'json': '.json',
+      'xml': '.xml',
+      'sql': '.sql',
+      'bash': '.sh',
+      'sh': '.sh',
+      'text': '.txt'
+    };
+    
+    return extensions[language.toLowerCase()] || '.txt';
+  }
+
+  private async createArtifact(userId: string, artifact: any): Promise<void> {
+    const { query } = require('../db');
+    
+    await query(
+      `INSERT INTO artifacts (conversation_id, name, type, mime_type, content, file_extension) 
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        artifact.conversationId,
+        artifact.name,
+        artifact.type,
+        artifact.mimeType,
+        artifact.content,
+        artifact.fileExtension
+      ]
+    );
   }
 
   // Keep-alive mechanism

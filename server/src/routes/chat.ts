@@ -14,15 +14,15 @@ const conversations = new Map<string, any>();
 // Create a new conversation
 router.post('/conversations', (req, res) => {
   const conversationId = uuidv4();
-  const conversation = {
-    id: conversationId,
-    messages: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    title: 'New Conversation',
-    model: 'claude-3-5-sonnet-20241022',
-    totalCost: 0
-  };
+      const conversation = {
+      id: conversationId,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      title: 'New Conversation',
+      model: 'claude-sonnet-4-20250514',
+      totalCost: 0
+    };
 
   conversations.set(conversationId, conversation);
   res.json(conversation);
@@ -65,7 +65,7 @@ router.post('/conversations/:id/messages', async (req: AuthRequest, res) => {
 
     const {
       message,
-      model = conversation.model,
+      model = conversation.model || 'claude-sonnet-4-20250514',
       temperature = 0.7,
       maxTokens = 4096,
       systemPrompt,

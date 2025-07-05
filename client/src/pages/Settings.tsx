@@ -10,10 +10,8 @@ export default function Settings() {
   const {
     temperature,
     maxTokens,
-    enableThinking,
     setTemperature,
     setMaxTokens,
-    setEnableThinking,
   } = useChatStore();
 
   const { theme, setTheme } = useThemeStore();
@@ -341,30 +339,7 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Advanced Features */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Advanced Features
-          </h2>
-          
-          <div className="space-y-4">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={enableThinking}
-                onChange={(e) => setEnableThinking(e.target.checked)}
-                className="w-4 h-4 text-claude-accent bg-gray-100 border-gray-300 rounded focus:ring-claude-accent"
-              />
-              <div>
-                <span className="font-medium">Enable Extended Thinking</span>
-                <p className="text-sm text-gray-500">
-                  Shows Claude's reasoning process (available for Claude 4 and Sonnet models)
-                </p>
-              </div>
-            </label>
-          </div>
-        </div>
+
 
         {/* Appearance */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">

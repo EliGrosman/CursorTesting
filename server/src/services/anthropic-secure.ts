@@ -77,7 +77,7 @@ export class SecureAnthropicService {
       : await this.getClientForUser(userId);
     
     const {
-      model = 'claude-3-5-sonnet-20241022',
+      model = 'claude-sonnet-4-20250514',
       maxTokens = 4096,
       temperature = 0.7,
       systemPrompt,
@@ -103,9 +103,9 @@ export class SecureAnthropicService {
 
     // Enable thinking mode for extended reasoning
     if (enableThinking && (model.includes('sonnet') || model.includes('opus-4'))) {
-      requestParams.metadata = {
-        ...requestParams.metadata,
-        thinking_mode: 'enabled'
+      requestParams.thinking = {
+        type: 'enabled',
+        budget_tokens: 10000
       };
     }
 
