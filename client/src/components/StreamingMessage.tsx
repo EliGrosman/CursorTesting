@@ -22,7 +22,7 @@ export default function StreamingMessage({ content }: StreamingMessageProps) {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              code({ node, className, children }) {
+              code({ className, children }) {
                 const match = /language-(\w+)/.exec(className || '');
                 const isInline = !match;
                 return !isInline ? (

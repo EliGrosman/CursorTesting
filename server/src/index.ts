@@ -25,8 +25,8 @@ const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
   cors: {
     origin: process.env.ALLOWED_ORIGINS?.split(',') || [
-      'http://localhost:5173',
-      'http://localhost:3000'
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      process.env.ALTERNATIVE_FRONTEND_URL || 'http://localhost:3000'
     ],
     credentials: true
   }
@@ -36,8 +36,8 @@ const io = new SocketIOServer(httpServer, {
 const corsOptions = {
   origin: function (origin: any, callback: any) {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-      'http://localhost:5173',
-      'http://localhost:3000'
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      process.env.ALTERNATIVE_FRONTEND_URL || 'http://localhost:3000'
     ];
     // Allow requests with no origin (like mobile apps or Postman)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
