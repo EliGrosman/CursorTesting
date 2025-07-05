@@ -77,7 +77,7 @@ router.post('/conversations/:id/messages', async (req: AuthRequest, res) => {
     // Check if user has API key (either stored or provided directly)
     if (!req.user && !apiKey) {
       return res.status(401).json({ 
-        error: 'API key required. Please provide your Anthropic API key or sign up for an account.' 
+        error: 'API key required. Please provide your Anthropic API key or sign up for an account to store your API key securely.' 
       });
     }
 

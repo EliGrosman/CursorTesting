@@ -26,7 +26,7 @@ export class SecureAnthropicService {
     );
 
     if (!apiKeyRecord) {
-      throw new Error('No active API key found. Please add your Anthropic API key in settings.');
+      throw new Error('No active API key found. Please add your Anthropic API key in the Settings page. You can add multiple API keys and manage them securely.');
     }
 
     // Decrypt the API key
@@ -154,7 +154,7 @@ export class SecureAnthropicService {
     );
 
     if (!apiKeyRecord) {
-      throw new Error('No active API key found. Please add your Anthropic API key in settings.');
+      throw new Error('No active API key found. Please add your Anthropic API key in the Settings page. You can add multiple API keys and manage them securely.');
     }
 
     const apiKey = encryptionService.decrypt(apiKeyRecord.encrypted_key);
