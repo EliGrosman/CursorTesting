@@ -144,7 +144,7 @@ export default function Settings() {
           <div className="mb-6">
             <h3 className="text-md font-medium mb-3">Your API Keys</h3>
             {loadingKeys ? (
-              <div className="text-gray-500">Loading API keys...</div>
+              <div className="text-gray-500 dark:text-gray-400">Loading API keys...</div>
             ) : apiKeys.length > 0 ? (
               <div className="space-y-3">
                 {apiKeys.map((key) => (
@@ -168,16 +168,16 @@ export default function Settings() {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          <p>Key: {maskApiKey('sk-ant-api03-...')}</p>
-                          <p>Created: {new Date(key.created_at).toLocaleDateString()}</p>
-                          {key.last_used_at && (
-                            <p>Last used: {new Date(key.last_used_at).toLocaleDateString()}</p>
-                          )}
-                          {key.expires_at && (
-                            <p>Expires: {new Date(key.expires_at).toLocaleDateString()}</p>
-                          )}
-                        </div>
+                                    <div className="text-sm text-gray-600 dark:text-gray-300">
+              <p>Key: {maskApiKey('sk-ant-api03-...')}</p>
+              <p>Created: {new Date(key.created_at).toLocaleDateString()}</p>
+              {key.last_used_at && (
+                <p>Last used: {new Date(key.last_used_at).toLocaleDateString()}</p>
+              )}
+              {key.expires_at && (
+                <p>Expires: {new Date(key.expires_at).toLocaleDateString()}</p>
+              )}
+            </div>
                         
                         {/* Decrypt API Key Section */}
                         {decryptedKeys[key.id] ? (
@@ -234,7 +234,7 @@ export default function Settings() {
                 ))}
               </div>
             ) : (
-              <div className="text-gray-500 text-center py-4">
+              <div className="text-gray-500 dark:text-gray-400 text-center py-4">
                 No API keys found. Add your first API key below.
               </div>
             )}
@@ -285,7 +285,7 @@ export default function Settings() {
                     {isSaving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   Your API key is encrypted and stored securely. You'll need to enter your password to retrieve it.
                 </p>
               </div>

@@ -24,6 +24,17 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       [req.user!.id]
     );
 
+    // If user has no active keys but has keys, activate the most recent one
+    const hasActiveKey = apiKeys.some(key => key.is_active);
+    if (!hasActiveKey && apiKeys.length > 0) {
+      const mostRecentKey = apiKeys[0];
+      await query(
+        'UPDATE api_keys SET is_active = true WHERE id = $1',
+        [mostRecentKey.id]
+      );
+      mostRecentKey.is_active = true;
+    }
+
     res.json(apiKeys.map(key => ({
       ...key,
       isExpired: key.expires_at && new Date(key.expires_at) < new Date()
@@ -63,9 +74,9 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
     // Store in database
     const apiKey = await queryOne(
-      `INSERT INTO api_keys (user_id, name, key_hash, encrypted_key, expires_at) 
-       VALUES ($1, $2, $3, $4, $5) 
-       RETURNING id, name, expires_at, created_at`,
+      `INSERT INTO api_keys (user_id, name, key_hash, encrypted_key, expires_at, is_active) 
+       VALUES ($1, $2, $3, $4, $5, true) 
+       RETURNING id, name, expires_at, created_at, is_active`,
       [req.user!.id, data.name, keyHash, encryptedKey, expiresAt]
     );
 
