@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --claude-bg: #F7F4F0;
+    --claude-text: #3D3D3D;
+    --claude-border: #E5E1DB;
+    --claude-accent: #D97706;
+  }
+
+  .dark {
+    --claude-bg: #2B2B2B;
+    --claude-text: #E8E8E8;
+    --claude-border: #4A4A4A;
+    --claude-accent: #D97706;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-claude-bg text-claude-text transition-colors duration-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-claude-accent text-white rounded-lg hover:bg-claude-accent-hover transition-colors duration-200 font-medium;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 font-medium;
+  }
+
+  .input-primary {
+    @apply w-full px-4 py-2 bg-white dark:bg-gray-800 border border-claude-border dark:border-claude-border-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-claude-accent transition-all duration-200;
+  }
+
+  .chat-message {
+    @apply p-4 rounded-lg animate-fade-in;
+  }
+
+  .thinking-indicator {
+    @apply inline-flex items-center space-x-1;
+  }
+
+  .thinking-dot {
+    @apply w-2 h-2 bg-claude-accent rounded-full animate-pulse;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.400') transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500 dark:bg-gray-500;
+  }
+
+  /* Markdown styles */
+  .prose-claude {
+    @apply prose prose-gray dark:prose-invert max-w-none;
+  }
+
+  .prose-claude pre {
+    @apply bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700;
+  }
+
+  .prose-claude code {
+    @apply text-sm;
+  }
+
+  .prose-claude a {
+    @apply text-claude-accent hover:text-claude-accent-hover;
+  }
+
+  /* Loading animation */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .loading-shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .loading-shimmer::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    animation: shimmer 2s infinite;
+  }
+}

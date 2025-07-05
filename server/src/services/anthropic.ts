@@ -1,0 +1,169 @@
+import Anthropic from '@anthropic-ai/sdk';
+import { MessageParam, MessageStreamEvent } from '@anthropic-ai/sdk/resources';
+
+export class AnthropicService {
+  private client: Anthropic;
+
+  constructor() {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is required');
+    }
+
+    this.client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+  }
+
+  async createMessage(
+    messages: MessageParam[],
+    options: {
+      model?: string;
+      maxTokens?: number;
+      temperature?: number;
+      systemPrompt?: string;
+      stream?: boolean;
+      tools?: any[];
+      enableThinking?: boolean;
+    } = {}
+  ) {
+    const {
+      model = 'claude-3-5-sonnet-20241022',
+      maxTokens = 4096,
+      temperature = 0.7,
+      systemPrompt,
+      stream = false,
+      tools = [],
+      enableThinking = false
+    } = options;
+
+    const requestParams: any = {
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      messages,
+    };
+
+    if (systemPrompt) {
+      requestParams.system = systemPrompt;
+    }
+
+    if (tools.length > 0) {
+      requestParams.tools = tools;
+    }
+
+    // Enable thinking mode for extended reasoning
+    if (enableThinking && model.includes('sonnet')) {
+      requestParams.metadata = {
+        ...requestParams.metadata,
+        thinking_mode: 'enabled'
+      };
+    }
+
+    if (stream) {
+      return this.client.messages.create({
+        ...requestParams,
+        stream: true,
+      });
+    }
+
+    return this.client.messages.create(requestParams);
+  }
+
+  async *streamMessage(
+    messages: MessageParam[],
+    options: Parameters<typeof this.createMessage>[1] = {}
+  ) {
+    const stream = await this.createMessage(messages, { ...options, stream: true });
+
+    for await (const event of stream as AsyncIterable<MessageStreamEvent>) {
+      yield event;
+    }
+  }
+
+  // Helper to format messages for the API
+  formatUserMessage(content: string, attachments?: Array<{ type: string; data: string; mimeType?: string }>): MessageParam {
+    const contentBlocks: any[] = [{ type: 'text', text: content }];
+
+    if (attachments) {
+      for (const attachment of attachments) {
+        if (attachment.type === 'image') {
+          contentBlocks.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: attachment.mimeType || 'image/jpeg',
+              data: attachment.data
+            }
+          });
+        }
+      }
+    }
+
+    return {
+      role: 'user',
+      content: contentBlocks
+    };
+  }
+
+  // Get available models
+  getAvailableModels() {
+    return [
+      {
+        id: 'claude-3-5-sonnet-20241022',
+        name: 'Claude 3.5 Sonnet',
+        description: 'Most capable model with extended thinking',
+        supportsFunctions: true,
+        supportsVision: true,
+        supportsThinking: true,
+        contextWindow: 200000,
+        outputTokens: 8192
+      },
+      {
+        id: 'claude-3-opus-20240229',
+        name: 'Claude 3 Opus',
+        description: 'Powerful model for complex tasks',
+        supportsFunctions: true,
+        supportsVision: true,
+        supportsThinking: false,
+        contextWindow: 200000,
+        outputTokens: 4096
+      },
+      {
+        id: 'claude-3-haiku-20240307',
+        name: 'Claude 3 Haiku',
+        description: 'Fast and efficient for simple tasks',
+        supportsFunctions: true,
+        supportsVision: true,
+        supportsThinking: false,
+        contextWindow: 200000,
+        outputTokens: 4096
+      }
+    ];
+  }
+
+  // Calculate token usage and cost
+  calculateCost(usage: { input_tokens: number; output_tokens: number }, model: string) {
+    // Prices per 1M tokens (as of late 2024)
+    const pricing: Record<string, { input: number; output: number }> = {
+      'claude-3-5-sonnet-20241022': { input: 3, output: 15 },
+      'claude-3-opus-20240229': { input: 15, output: 75 },
+      'claude-3-haiku-20240307': { input: 0.25, output: 1.25 }
+    };
+
+    const modelPricing = pricing[model] || pricing['claude-3-5-sonnet-20241022'];
+    
+    const inputCost = (usage.input_tokens / 1_000_000) * modelPricing.input;
+    const outputCost = (usage.output_tokens / 1_000_000) * modelPricing.output;
+    
+    return {
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+      totalTokens: usage.input_tokens + usage.output_tokens,
+      inputCost,
+      outputCost,
+      totalCost: inputCost + outputCost
+    };
+  }
+}
+
+export const anthropicService = new AnthropicService();
