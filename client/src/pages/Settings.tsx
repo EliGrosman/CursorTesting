@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Save, Brain, Zap, MessageSquare, Key, Shield, Moon, Sun } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Brain, Zap, MessageSquare, Key, Shield, Moon, Sun, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { useThemeStore } from '../stores/themeStore';
 import { useAuthStore } from '../stores/authStore';
@@ -23,6 +23,30 @@ export default function Settings() {
   const [newApiKey, setNewApiKey] = useState('');
   const [showNewApiKey, setShowNewApiKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [apiKeys, setApiKeys] = useState<any[]>([]);
+  const [loadingKeys, setLoadingKeys] = useState(false);
+  const [showDecryptedKey, setShowDecryptedKey] = useState<string | null>(null);
+  const [decryptPassword, setDecryptPassword] = useState('');
+  const [decrypting, setDecrypting] = useState(false);
+
+  // Load API keys on component mount
+  useEffect(() => {
+    if (user) {
+      loadApiKeys();
+    }
+  }, [user]);
+
+  const loadApiKeys = async () => {
+    setLoadingKeys(true);
+    try {
+      const response = await api.get('/apikeys');
+      setApiKeys(response.data);
+    } catch (error: any) {
+      toast.error('Failed to load API keys');
+    } finally {
+      setLoadingKeys(false);
+    }
+  };
 
   const handleSaveApiKey = async () => {
     if (!newApiKeyName.trim() || !newApiKey.trim()) {
@@ -41,11 +65,53 @@ export default function Settings() {
       setNewApiKeyName('');
       setNewApiKey('');
       setShowNewApiKey(false);
+      loadApiKeys(); // Reload the list
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to save API key');
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDeleteApiKey = async (keyId: string) => {
+    if (!confirm('Are you sure you want to delete this API key?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/apikeys/${keyId}`);
+      toast.success('API key deleted');
+      loadApiKeys(); // Reload the list
+    } catch (error: any) {
+      toast.error('Failed to delete API key');
+    }
+  };
+
+  const handleDecryptApiKey = async (keyId: string) => {
+    if (!decryptPassword) {
+      toast.error('Please enter your password');
+      return;
+    }
+
+    setDecrypting(true);
+    try {
+      const response = await api.post(`/apikeys/${keyId}/decrypt`, {
+        password: decryptPassword
+      });
+      
+      setShowDecryptedKey(response.data.key);
+      setDecryptPassword('');
+      toast.success('API key decrypted successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to decrypt API key');
+    } finally {
+      setDecrypting(false);
+    }
+  };
+
+  const maskApiKey = (key: string) => {
+    if (!key) return '';
+    return key.substring(0, 7) + '...' + key.substring(key.length - 4);
   };
 
   return (
@@ -67,58 +133,121 @@ export default function Settings() {
           </div>
         )}
 
-        {/* API Key Configuration */}
+        {/* API Key Management */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-claude-border dark:border-claude-border-dark p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Key className="h-5 w-5" />
             API Key Management
           </h2>
           
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Key Name
-              </label>
-              <input
-                type="text"
-                value={newApiKeyName}
-                onChange={(e) => setNewApiKeyName(e.target.value)}
-                placeholder="e.g., Production Key"
-                className="w-full input-primary"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Anthropic API Key
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type={showNewApiKey ? 'text' : 'password'}
-                  value={newApiKey}
-                  onChange={(e) => setNewApiKey(e.target.value)}
-                  placeholder="sk-ant-api..."
-                  className="flex-1 input-primary"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewApiKey(!showNewApiKey)}
-                  className="btn-secondary"
-                >
-                  {showNewApiKey ? 'Hide' : 'Show'}
-                </button>
-                <button
-                  onClick={handleSaveApiKey}
-                  disabled={isSaving}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {isSaving ? 'Saving...' : 'Save'}
-                </button>
+          {/* Existing API Keys */}
+          <div className="mb-6">
+            <h3 className="text-md font-medium mb-3">Your API Keys</h3>
+            {loadingKeys ? (
+              <div className="text-gray-500">Loading API keys...</div>
+            ) : apiKeys.length > 0 ? (
+              <div className="space-y-3">
+                {apiKeys.map((key) => (
+                  <div key={key.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium">{key.name}</span>
+                          {key.is_active ? (
+                            <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded">
+                              Inactive
+                            </span>
+                          )}
+                          {key.isExpired && (
+                            <span className="px-2 py-1 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded">
+                              Expired
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <p>Key: {maskApiKey('sk-ant-api03-...')}</p>
+                          <p>Created: {new Date(key.created_at).toLocaleDateString()}</p>
+                          {key.last_used_at && (
+                            <p>Last used: {new Date(key.last_used_at).toLocaleDateString()}</p>
+                          )}
+                          {key.expires_at && (
+                            <p>Expires: {new Date(key.expires_at).toLocaleDateString()}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDeleteApiKey(key.id)}
+                          className="btn-secondary text-red-600 hover:text-red-700"
+                          title="Delete API key"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Your API key is encrypted and stored securely. You'll need to enter your password to retrieve it.
-              </p>
+            ) : (
+              <div className="text-gray-500 text-center py-4">
+                No API keys found. Add your first API key below.
+              </div>
+            )}
+          </div>
+
+          {/* Add New API Key */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h3 className="text-md font-medium mb-3">Add New API Key</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Key Name
+                </label>
+                <input
+                  type="text"
+                  value={newApiKeyName}
+                  onChange={(e) => setNewApiKeyName(e.target.value)}
+                  placeholder="e.g., Production Key"
+                  className="w-full input-primary"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Anthropic API Key
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type={showNewApiKey ? 'text' : 'password'}
+                    value={newApiKey}
+                    onChange={(e) => setNewApiKey(e.target.value)}
+                    placeholder="sk-ant-api..."
+                    className="flex-1 input-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewApiKey(!showNewApiKey)}
+                    className="btn-secondary"
+                  >
+                    {showNewApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={handleSaveApiKey}
+                    disabled={isSaving}
+                    className="btn-primary flex items-center gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Your API key is encrypted and stored securely. You'll need to enter your password to retrieve it.
+                </p>
+              </div>
             </div>
           </div>
         </div>
