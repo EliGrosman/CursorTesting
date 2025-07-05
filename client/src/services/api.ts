@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
 
-const API_BASE_URL = '/api';
+// Use environment variables with fallback to relative URL for production
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || '';
 
 // Create axios instance
 const api = axios.create({
@@ -71,7 +75,7 @@ let socket: Socket | null = null;
 export const websocketService = {
   connect(): Socket {
     if (!socket) {
-      socket = io('ws://localhost:3001', {
+      socket = io(WS_BASE_URL || window.location.origin, {
         transports: ['websocket'],
         reconnection: true,
         reconnectionDelay: 1000,

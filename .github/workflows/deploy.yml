@@ -1,0 +1,136 @@
+name: Deploy Application
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: claude_clone_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm run install:all
+    
+    - name: Run database migrations
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/claude_clone_test
+      run: |
+        cd server
+        psql $DATABASE_URL < src/db/schema.sql
+    
+    - name: Run backend tests
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/claude_clone_test
+        JWT_SECRET: test-secret
+        NODE_ENV: test
+      run: |
+        cd server
+        npm test
+    
+    - name: Run frontend tests
+      run: |
+        cd client
+        npm test -- --passWithNoTests
+    
+    - name: Build frontend
+      run: |
+        cd client
+        npm run build
+
+  deploy-backend:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy Backend to Vercel
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_BACKEND }}
+      run: |
+        npm i -g vercel
+        cd server
+        vercel --prod --token=$VERCEL_TOKEN
+
+  deploy-frontend:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Build Frontend
+      env:
+        VITE_API_URL: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_API_URL || secrets.STAGING_API_URL }}
+        VITE_WS_URL: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_WS_URL || secrets.STAGING_WS_URL }}
+      run: |
+        cd client
+        npm install
+        npm run build
+    
+    - name: Deploy to Render
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      run: |
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"clearCache": "clear"}' \
+          https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys
+
+  update-database:
+    needs: [deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run Production Migrations
+      env:
+        DATABASE_URL: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+      run: |
+        cd server
+        npm install
+        npm run db:migrate
