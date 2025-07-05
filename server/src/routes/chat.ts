@@ -1,8 +1,12 @@
 import { Router } from 'express';
-import { getAnthropicService } from '../services/anthropic';
+import { secureAnthropicService } from '../services/anthropic-secure';
+import { optionalAuth, AuthRequest } from '../middleware/auth';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
+
+// Apply optional auth middleware to all routes
+router.use(optionalAuth);
 
 // Store conversations in memory (in production, use a database)
 const conversations = new Map<string, any>();
@@ -50,7 +54,7 @@ router.delete('/conversations/:id', (req, res) => {
 });
 
 // Send a message (non-streaming)
-router.post('/conversations/:id/messages', async (req, res) => {
+router.post('/conversations/:id/messages', async (req: AuthRequest, res) => {
   try {
     console.log('📨 Received message request:', req.params.id, req.body);
     
@@ -66,25 +70,47 @@ router.post('/conversations/:id/messages', async (req, res) => {
       maxTokens = 4096,
       systemPrompt,
       enableThinking = false,
-      attachments = []
+      attachments = [],
+      apiKey // Allow direct API key for BYOK
     } = req.body;
 
+    // Check if user has API key (either stored or provided directly)
+    if (!req.user && !apiKey) {
+      return res.status(401).json({ 
+        error: 'API key required. Please provide your Anthropic API key or sign up for an account.' 
+      });
+    }
+
     // Format user message with attachments
-    const userMessage = getAnthropicService().formatUserMessage(message, attachments);
+    const userMessage = secureAnthropicService.formatUserMessage(message, attachments);
     conversation.messages.push(userMessage);
 
     // Generate response
     console.log('🤖 Calling Anthropic API with model:', model);
-    const response = await getAnthropicService().createMessage(
-      conversation.messages,
-      {
-        model,
-        temperature,
-        maxTokens,
-        systemPrompt,
-        enableThinking
-      }
-    );
+    const response = req.user 
+      ? await secureAnthropicService.createMessage(
+          req.user.id,
+          conversation.messages,
+          {
+            model,
+            temperature,
+            maxTokens,
+            systemPrompt,
+            enableThinking
+          }
+        )
+      : await secureAnthropicService.createMessage(
+          'anonymous',
+          conversation.messages,
+          {
+            model,
+            temperature,
+            maxTokens,
+            systemPrompt,
+            enableThinking,
+            directApiKey: apiKey
+          }
+        );
     console.log('✅ Anthropic API response received');
 
     // Add assistant response to conversation
@@ -100,7 +126,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
 
     // Calculate and update cost
     if (response.usage) {
-              const cost = getAnthropicService().calculateCost(response.usage, model);
+      const cost = secureAnthropicService.calculateCost(response.usage, model);
       conversation.totalCost += cost.totalCost;
       
       res.json({
@@ -124,7 +150,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
     }
   } catch (error: any) {
     console.error('❌ Chat error:', error);
-    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error stack:', error);
     res.status(500).json({ 
       error: error.message || 'Failed to process message',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
@@ -134,7 +160,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
 
 // Get available models
 router.get('/models', (req, res) => {
-  res.json(getAnthropicService().getAvailableModels());
+  res.json(secureAnthropicService.getAvailableModels());
 });
 
 // Export conversation as markdown

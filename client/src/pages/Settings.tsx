@@ -1,7 +1,15 @@
-import { useState } from 'react';
-import { Save, Brain, Zap, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Brain, Zap, MessageSquare, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import toast from 'react-hot-toast';
+
+interface ApiKey {
+  id: string;
+  name: string;
+  isActive: boolean;
+  createdAt: string;
+  lastUsedAt?: string;
+}
 
 export default function Settings() {
   const {
@@ -14,18 +22,169 @@ export default function Settings() {
   } = useChatStore();
 
   const [apiKey, setApiKey] = useState('');
+  const [apiKeyName, setApiKeyName] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
-  const handleSaveApiKey = () => {
+  // Load API keys on component mount
+  useEffect(() => {
+    loadApiKeys();
+  }, []);
+
+  const loadApiKeys = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      const response = await fetch('/api/api-keys', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const keys = await response.json();
+        setApiKeys(keys);
+      }
+    } catch (error) {
+      console.error('Error loading API keys:', error);
+    }
+  };
+
+  const handleSaveApiKey = async () => {
     if (!apiKey.trim()) {
       toast.error('Please enter an API key');
       return;
     }
-    
-    // In a real app, you'd send this to the backend securely
-    localStorage.setItem('anthropic_api_key', apiKey);
-    toast.success('API key saved (client-side only - use backend in production)');
-    setApiKey('');
+
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        toast.error('Please log in to save API keys');
+        return;
+      }
+
+      const response = await fetch('/api/api-keys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          apiKey: apiKey.trim(),
+          name: apiKeyName.trim() || 'My API Key',
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('API key saved successfully');
+        setApiKey('');
+        setApiKeyName('');
+        loadApiKeys();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to save API key');
+      }
+    } catch (error) {
+      console.error('Error saving API key:', error);
+      toast.error('Failed to save API key');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteApiKey = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this API key?')) return;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      const response = await fetch(`/api/api-keys/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast.success('API key deleted');
+        loadApiKeys();
+      } else {
+        toast.error('Failed to delete API key');
+      }
+    } catch (error) {
+      console.error('Error deleting API key:', error);
+      toast.error('Failed to delete API key');
+    }
+  };
+
+  const handleEditApiKey = async (id: string) => {
+    if (!editingName.trim()) return;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      const response = await fetch(`/api/api-keys/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: editingName.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('API key updated');
+        setEditingKey(null);
+        setEditingName('');
+        loadApiKeys();
+      } else {
+        toast.error('Failed to update API key');
+      }
+    } catch (error) {
+      console.error('Error updating API key:', error);
+      toast.error('Failed to update API key');
+    }
+  };
+
+  const handleTestApiKey = async () => {
+    if (!apiKey.trim()) {
+      toast.error('Please enter an API key');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/api-keys/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apiKey: apiKey.trim(),
+        }),
+      });
+
+      const result = await response.json();
+      if (result.valid) {
+        toast.success('API key is valid!');
+      } else {
+        toast.error(result.error || 'Invalid API key');
+      }
+    } catch (error) {
+      console.error('Error testing API key:', error);
+      toast.error('Failed to test API key');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
