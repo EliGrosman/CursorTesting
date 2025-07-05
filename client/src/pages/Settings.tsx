@@ -25,7 +25,7 @@ export default function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [loadingKeys, setLoadingKeys] = useState(false);
-  const [showDecryptedKey, setShowDecryptedKey] = useState<string | null>(null);
+  const [decryptedKeys, setDecryptedKeys] = useState<Record<string, string>>({});
   const [decryptPassword, setDecryptPassword] = useState('');
   const [decrypting, setDecrypting] = useState(false);
 
@@ -99,7 +99,7 @@ export default function Settings() {
         password: decryptPassword
       });
       
-      setShowDecryptedKey(response.data.key);
+      setDecryptedKeys(prev => ({ ...prev, [keyId]: response.data.key }));
       setDecryptPassword('');
       toast.success('API key decrypted successfully');
     } catch (error: any) {
@@ -178,6 +178,47 @@ export default function Settings() {
                             <p>Expires: {new Date(key.expires_at).toLocaleDateString()}</p>
                           )}
                         </div>
+                        
+                        {/* Decrypt API Key Section */}
+                        {decryptedKeys[key.id] ? (
+                          <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                              API Key (copy this now - it won't be shown again):
+                            </p>
+                            <code className="text-xs bg-white dark:bg-gray-800 p-2 rounded border block break-all">
+                              {decryptedKeys[key.id]}
+                            </code>
+                            <button
+                              onClick={() => setDecryptedKeys(prev => {
+                                const newKeys = { ...prev };
+                                delete newKeys[key.id];
+                                return newKeys;
+                              })}
+                              className="mt-2 text-xs text-green-600 dark:text-green-400 hover:underline"
+                            >
+                              Hide key
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-3">
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="password"
+                                value={decryptPassword}
+                                onChange={(e) => setDecryptPassword(e.target.value)}
+                                placeholder="Enter your password"
+                                className="flex-1 input-primary text-sm"
+                              />
+                              <button
+                                onClick={() => handleDecryptApiKey(key.id)}
+                                disabled={decrypting || !decryptPassword}
+                                className="btn-secondary text-sm"
+                              >
+                                {decrypting ? 'Decrypting...' : 'Show Key'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <button
