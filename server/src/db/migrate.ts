@@ -10,28 +10,19 @@ async function runMigrations() {
     const schemaPath = path.join(__dirname, 'schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
     
-    // Split by statement (naive split by semicolon)
-    const statements = schema
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-    
-    // Execute each statement
-    for (const statement of statements) {
-      try {
-        await pool.query(statement + ';');
-        console.log('✓ Executed:', statement.split('\n')[0].substring(0, 50) + '...');
-      } catch (error: any) {
-        if (error.code === '42P07') {
-          // Table already exists
-          console.log('⚠️  Already exists:', statement.split('\n')[0].substring(0, 50) + '...');
-        } else {
-          throw error;
-        }
+    // Execute the entire schema as one statement
+    try {
+      await pool.query(schema);
+      console.log('✅ Database migrations completed successfully');
+    } catch (error: any) {
+      if (error.code === '42P07') {
+        // Some objects already exist, but that's okay
+        console.log('⚠️  Some objects already exist, continuing...');
+      } else {
+        throw error;
       }
     }
     
-    console.log('✅ Database migrations completed successfully');
     process.exit(0);
   } catch (error) {
     console.error('❌ Migration failed:', error);
