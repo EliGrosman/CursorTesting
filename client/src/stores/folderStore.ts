@@ -25,7 +25,7 @@ interface FolderStore {
   moveConversationToFolder: (conversationId: string, folderId: string | null) => Promise<void>;
 }
 
-export const useFolderStore = create<FolderStore>((set, get) => ({
+export const useFolderStore = create<FolderStore>((set) => ({
   folders: [],
   isLoading: false,
   

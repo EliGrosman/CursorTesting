@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { queryOne } from '../db';
 
-export interface AuthRequest extends Request<{ [key: string]: string }> {
+export interface AuthRequest extends Request {
   user?: {
     id: string;
     email: string;

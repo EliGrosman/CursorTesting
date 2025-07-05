@@ -3,7 +3,6 @@ import { Dialog } from '@headlessui/react';
 import { Search, X, Globe, FileText } from 'lucide-react';
 import { searchApi } from '../services/api';
 import toast from 'react-hot-toast';
-import clsx from 'clsx';
 
 interface ResearchModalProps {
   isOpen: boolean;

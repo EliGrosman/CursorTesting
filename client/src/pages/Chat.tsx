@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, Paperclip, StopCircle, Brain, Search } from 'lucide-react';
+import { Send, StopCircle, Brain, Search } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import { conversationApi, websocketService } from '../services/api';
 import MessageList from '../components/MessageList';
@@ -186,7 +186,7 @@ export default function Chat() {
   const handleStopStreaming = () => {
     // In a real implementation, send a stop signal to the server
     clearStreamingState();
-    toast.info('Stopped generating');
+    toast.success('Stopped generating');
   };
 
   const fileToBase64 = (file: File): Promise<string> => {

@@ -197,8 +197,6 @@ export const searchApi = {
     onProgress?: (data: any) => void
   ): Promise<ResearchResult> {
     return new Promise((resolve, reject) => {
-      const eventSource = new EventSource(`${API_BASE_URL}/search/research`);
-      
       const controller = new AbortController();
       
       fetch(`${API_BASE_URL}/search/research`, {

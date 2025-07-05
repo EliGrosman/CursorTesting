@@ -1,0 +1,50 @@
+2025-07-05T03:48:11.488887803Z ==> Running build command 'cd client && npm install && npm run build'...
+2025-07-05T03:48:25.897058398Z 
+2025-07-05T03:48:25.897107118Z added 479 packages, and audited 480 packages in 14s
+2025-07-05T03:48:25.897211968Z 
+2025-07-05T03:48:25.897222769Z 176 packages are looking for funding
+2025-07-05T03:48:25.897317659Z   run `npm fund` for details
+2025-07-05T03:48:25.915018594Z 
+2025-07-05T03:48:25.915050884Z 5 moderate severity vulnerabilities
+2025-07-05T03:48:25.915057464Z 
+2025-07-05T03:48:25.915063894Z To address all issues (including breaking changes), run:
+2025-07-05T03:48:25.915070044Z   npm audit fix --force
+2025-07-05T03:48:25.915074694Z 
+2025-07-05T03:48:25.915080024Z Run `npm audit` for details.
+2025-07-05T03:48:26.279107787Z 
+2025-07-05T03:48:26.279141997Z > claude-clone-client@0.0.0 build
+2025-07-05T03:48:26.279148377Z > tsc && vite build
+2025-07-05T03:48:26.279153397Z 
+2025-07-05T03:48:34.441273706Z src/components/Layout.tsx(18,1): error TS6133: 'format' is declared but its value is never read.
+2025-07-05T03:48:34.441606728Z src/components/MessageItem.tsx(69,30): error TS2339: Property 'inline' does not exist on type 'ClassAttributes<HTMLElement> & HTMLAttributes<HTMLElement> & ExtraProps'.
+2025-07-05T03:48:34.441842869Z src/components/MessageItem.tsx(74,23): error TS2769: No overload matches this call.
+2025-07-05T03:48:34.441870899Z   Overload 1 of 2, '(props: SyntaxHighlighterProps): SyntaxHighlighter', gave the following error.
+2025-07-05T03:48:34.441877679Z     Type 'CSSProperties | { [key: string]: CSSProperties; }' is not assignable to type '{ [key: string]: CSSProperties; } | undefined'.
+2025-07-05T03:48:34.441883079Z       Type 'CSSProperties' is not assignable to type '{ [key: string]: CSSProperties; }'.
+2025-07-05T03:48:34.441888489Z         Index signature for type 'string' is missing in type 'Properties<string | number, string & {}>'.
+2025-07-05T03:48:34.441894489Z   Overload 2 of 2, '(props: SyntaxHighlighterProps, context: any): SyntaxHighlighter', gave the following error.
+2025-07-05T03:48:34.441899379Z     Type 'CSSProperties | { [key: string]: CSSProperties; }' is not assignable to type '{ [key: string]: CSSProperties; } | undefined'.
+2025-07-05T03:48:34.441924249Z       Type 'CSSProperties' is not assignable to type '{ [key: string]: CSSProperties; }'.
+2025-07-05T03:48:34.441927759Z         Index signature for type 'string' is missing in type 'Properties<string | number, string & {}>'.
+2025-07-05T03:48:34.441931009Z src/components/ResearchModal.tsx(6,1): error TS6133: 'clsx' is declared but its value is never read.
+2025-07-05T03:48:34.441969439Z src/components/StreamingMessage.tsx(25,28): error TS2339: Property 'inline' does not exist on type 'ClassAttributes<HTMLElement> & HTMLAttributes<HTMLElement> & ExtraProps'.
+2025-07-05T03:48:34.442002669Z src/components/StreamingMessage.tsx(30,21): error TS2769: No overload matches this call.
+2025-07-05T03:48:34.442007539Z   Overload 1 of 2, '(props: SyntaxHighlighterProps): SyntaxHighlighter', gave the following error.
+2025-07-05T03:48:34.442011429Z     Type 'CSSProperties | { [key: string]: CSSProperties; }' is not assignable to type '{ [key: string]: CSSProperties; } | undefined'.
+2025-07-05T03:48:34.44201494Z       Type 'CSSProperties' is not assignable to type '{ [key: string]: CSSProperties; }'.
+2025-07-05T03:48:34.44201885Z         Index signature for type 'string' is missing in type 'Properties<string | number, string & {}>'.
+2025-07-05T03:48:34.44202211Z   Overload 2 of 2, '(props: SyntaxHighlighterProps, context: any): SyntaxHighlighter', gave the following error.
+2025-07-05T03:48:34.44202551Z     Type 'CSSProperties | { [key: string]: CSSProperties; }' is not assignable to type '{ [key: string]: CSSProperties; } | undefined'.
+2025-07-05T03:48:34.44202887Z       Type 'CSSProperties' is not assignable to type '{ [key: string]: CSSProperties; }'.
+2025-07-05T03:48:34.44203252Z         Index signature for type 'string' is missing in type 'Properties<string | number, string & {}>'.
+2025-07-05T03:48:34.44210716Z src/pages/Chat.tsx(1,39): error TS6133: 'useCallback' is declared but its value is never read.
+2025-07-05T03:48:34.44212677Z src/pages/Chat.tsx(3,16): error TS6133: 'Paperclip' is declared but its value is never read.
+2025-07-05T03:48:34.44213966Z src/pages/Chat.tsx(189,11): error TS2339: Property 'info' does not exist on type '{ (message: Message, opts?: Partial<Pick<Toast, "id" | "style" | "className" | "position" | "icon" | "duration" | "ariaProps" | "iconTheme" | "removeDelay">> | undefined): string; ... 6 more ...; promise<T>(promise: Promise<...> | (() => Promise<...>), msgs: { ...; }, opts?: DefaultToastOptions | undefined): Promise...'.
+2025-07-05T03:48:34.442383821Z src/services/api.ts(200,13): error TS6133: 'eventSource' is declared but its value is never read.
+2025-07-05T03:48:34.442414401Z src/stores/chatStore.ts(48,53): error TS6133: 'get' is declared but its value is never read.
+2025-07-05T03:48:34.442422621Z src/stores/folderStore.ts(28,57): error TS6133: 'get' is declared but its value is never read.
+2025-07-05T03:48:34.521199091Z ==> Build failed 😞
+2025-07-05T03:48:34.521223551Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-07-05T03:48:34.594741267Z ==> Requesting Node.js version 20
+2025-07-05T03:48:34.832771453Z ==> Using Node.js version 20.19.3 via environment variable NODE_VERSION
+2025-07-05T03:48:34.881259518Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version

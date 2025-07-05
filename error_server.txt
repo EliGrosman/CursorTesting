@@ -1,0 +1,100 @@
+2025-07-05T03:48:05.796160314Z   Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+2025-07-05T03:48:05.796185075Z src/routes/auth.ts(2,20): error TS7016: Could not find a declaration file for module 'bcryptjs'. '/opt/render/project/src/server/node_modules/bcryptjs/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796187995Z   Try `npm i --save-dev @types/bcryptjs` if it exists or add a new declaration (.d.ts) file containing `declare module 'bcryptjs';`
+2025-07-05T03:48:05.796189925Z src/routes/auth.ts(22,33): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796191575Z src/routes/auth.ts(22,38): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796209615Z src/routes/auth.ts(77,30): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796211575Z src/routes/auth.ts(77,35): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796229716Z src/routes/auth.ts(121,58): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796232896Z src/routes/auth.ts(149,60): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796237856Z src/routes/auth.ts(151,26): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796245936Z src/routes/auth.ts(173,69): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796250546Z src/routes/auth.ts(175,81): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796254866Z src/routes/auth.ts(224,72): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796314607Z src/routes/auth.ts(226,50): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796325718Z src/routes/batch.ts(1,24): error TS7016: Could not find a declaration file for module 'express'. '/opt/render/project/src/server/node_modules/express/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796340398Z   Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+2025-07-05T03:48:05.796345288Z src/routes/batch.ts(5,30): error TS7016: Could not find a declaration file for module 'uuid'. '/opt/render/project/src/server/node_modules/uuid/dist/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796348018Z   Try `npm i --save-dev @types/uuid` if it exists or add a new declaration (.d.ts) file containing `declare module 'uuid';`
+2025-07-05T03:48:05.796356148Z src/routes/batch.ts(10,61): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796372749Z src/routes/batch.ts(12,30): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796375449Z src/routes/batch.ts(59,60): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796388849Z src/routes/batch.ts(84,64): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796392079Z src/routes/batch.ts(88,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.79640883Z src/routes/batch.ts(134,67): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.79641572Z src/routes/batch.ts(138,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.79642119Z src/routes/batch.ts(165,73): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.79642642Z src/routes/batch.ts(169,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.79642864Z src/routes/batch.ts(181,60): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796460081Z src/routes/chat.ts(1,24): error TS7016: Could not find a declaration file for module 'express'. '/opt/render/project/src/server/node_modules/express/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796465091Z   Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+2025-07-05T03:48:05.796467301Z src/routes/chat.ts(3,30): error TS7016: Could not find a declaration file for module 'uuid'. '/opt/render/project/src/server/node_modules/uuid/dist/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796469501Z   Try `npm i --save-dev @types/uuid` if it exists or add a new declaration (.d.ts) file containing `declare module 'uuid';`
+2025-07-05T03:48:05.796474241Z src/routes/chat.ts(11,32): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796481121Z src/routes/chat.ts(11,37): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796485941Z src/routes/chat.ts(28,31): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796511852Z src/routes/chat.ts(28,36): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796514762Z src/routes/chat.ts(35,35): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796516932Z src/routes/chat.ts(35,40): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796525532Z src/routes/chat.ts(44,38): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796527852Z src/routes/chat.ts(44,43): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796552863Z src/routes/chat.ts(53,51): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796557663Z src/routes/chat.ts(53,56): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796560573Z src/routes/chat.ts(136,24): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796580513Z src/routes/chat.ts(136,29): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796583853Z src/routes/chat.ts(141,42): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796594624Z src/routes/chat.ts(141,47): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796615934Z src/routes/file.ts(1,24): error TS7016: Could not find a declaration file for module 'express'. '/opt/render/project/src/server/node_modules/express/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796619394Z   Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+2025-07-05T03:48:05.796621554Z src/routes/file.ts(2,20): error TS7016: Could not find a declaration file for module 'multer'. '/opt/render/project/src/server/node_modules/multer/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796623744Z   Try `npm i --save-dev @types/multer` if it exists or add a new declaration (.d.ts) file containing `declare module 'multer';`
+2025-07-05T03:48:05.796626044Z src/routes/file.ts(5,30): error TS7016: Could not find a declaration file for module 'uuid'. '/opt/render/project/src/server/node_modules/uuid/dist/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796628364Z   Try `npm i --save-dev @types/uuid` if it exists or add a new declaration (.d.ts) file containing `declare module 'uuid';`
+2025-07-05T03:48:05.796630565Z src/routes/file.ts(11,23): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796641605Z src/routes/file.ts(11,28): error TS7006: Parameter 'file' implicitly has an 'any' type.
+2025-07-05T03:48:05.796646425Z src/routes/file.ts(11,34): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+2025-07-05T03:48:05.796667145Z src/routes/file.ts(16,14): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796671475Z src/routes/file.ts(16,19): error TS7006: Parameter 'file' implicitly has an 'any' type.
+2025-07-05T03:48:05.796674145Z src/routes/file.ts(16,25): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+2025-07-05T03:48:05.796685566Z src/routes/file.ts(28,16): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796690426Z src/routes/file.ts(28,21): error TS7006: Parameter 'file' implicitly has an 'any' type.
+2025-07-05T03:48:05.796697086Z src/routes/file.ts(28,27): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+2025-07-05T03:48:05.796699706Z src/routes/file.ts(56,54): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796705056Z src/routes/file.ts(56,59): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796710306Z src/routes/file.ts(81,67): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796732567Z src/routes/file.ts(81,72): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796790638Z src/routes/file.ts(87,37): error TS7006: Parameter 'file' implicitly has an 'any' type.
+2025-07-05T03:48:05.796793048Z src/routes/file.ts(106,36): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796798738Z src/routes/file.ts(106,41): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796802558Z src/routes/file.ts(130,40): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796830289Z src/routes/file.ts(130,45): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796832769Z src/routes/folders.ts(1,24): error TS7016: Could not find a declaration file for module 'express'. '/opt/render/project/src/server/node_modules/express/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796834779Z   Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+2025-07-05T03:48:05.796848269Z src/routes/folders.ts(24,56): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796850069Z src/routes/folders.ts(61,57): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796854069Z src/routes/folders.ts(63,47): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796855829Z src/routes/folders.ts(106,61): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.79688301Z src/routes/folders.ts(108,47): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.79688834Z src/routes/folders.ts(136,21): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.79689351Z src/routes/folders.ts(164,62): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.79689723Z src/routes/folders.ts(171,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.7969011Z src/routes/folders.ts(186,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.79690323Z src/routes/folders.ts(198,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796929021Z src/routes/folders.ts(213,73): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796932721Z src/routes/folders.ts(220,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796935931Z src/routes/folders.ts(231,74): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796941921Z src/routes/folders.ts(233,37): error TS2339: Property 'body' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796944871Z src/routes/folders.ts(242,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796971642Z src/routes/folders.ts(256,12): error TS2339: Property 'params' does not exist on type 'AuthRequest'.
+2025-07-05T03:48:05.796975172Z src/routes/search.ts(1,24): error TS7016: Could not find a declaration file for module 'express'. '/opt/render/project/src/server/node_modules/express/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.796977462Z   Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+2025-07-05T03:48:05.796985062Z src/routes/search.ts(7,28): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796989312Z src/routes/search.ts(7,33): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.796995933Z src/routes/search.ts(26,32): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.796998862Z src/routes/search.ts(26,37): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.797016863Z src/routes/search.ts(45,33): error TS7006: Parameter 'req' implicitly has an 'any' type.
+2025-07-05T03:48:05.797019303Z src/routes/search.ts(45,38): error TS7006: Parameter 'res' implicitly has an 'any' type.
+2025-07-05T03:48:05.797056084Z src/services/websocket.ts(2,30): error TS7016: Could not find a declaration file for module 'uuid'. '/opt/render/project/src/server/node_modules/uuid/dist/index.js' implicitly has an 'any' type.
+2025-07-05T03:48:05.797060854Z   Try `npm i --save-dev @types/uuid` if it exists or add a new declaration (.d.ts) file containing `declare module 'uuid';`
+2025-07-05T03:48:05.834547434Z ==> Build failed 😞
+2025-07-05T03:48:05.834561814Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
