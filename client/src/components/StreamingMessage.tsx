@@ -1,3 +1,4 @@
+import React from 'react';
 import { Bot } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

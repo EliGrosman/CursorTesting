@@ -1,3 +1,4 @@
+import React from 'react';
 import { Message } from '../services/api';
 import MessageItem from './MessageItem';
 import StreamingMessage from './StreamingMessage';
