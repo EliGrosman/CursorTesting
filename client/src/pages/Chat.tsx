@@ -175,6 +175,8 @@ export default function Chat() {
           maxTokens,
           enableThinking,
           attachments: processedAttachments,
+          // Include per-user API key (if stored in settings)
+          apiKey: localStorage.getItem('anthropic_api_key') ?? undefined,
         },
       });
     } catch (error) {

@@ -1,8 +1,11 @@
 import { Router } from 'express';
-import { getAnthropicService } from '../services/anthropic';
+// Use the secure, per-user Anthropic service so users can supply their own keys
+import { secureAnthropicService } from '../services/anthropic-secure';
+import { optionalAuth, AuthRequest } from '../middleware/auth';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
+router.use(optionalAuth);
 
 // Store conversations in memory (in production, use a database)
 const conversations = new Map<string, any>();
@@ -70,12 +73,13 @@ router.post('/conversations/:id/messages', async (req, res) => {
     } = req.body;
 
     // Format user message with attachments
-    const userMessage = getAnthropicService().formatUserMessage(message, attachments);
+    const userMessage = secureAnthropicService.formatUserMessage(message, attachments);
     conversation.messages.push(userMessage);
 
     // Generate response
     console.log('🤖 Calling Anthropic API with model:', model);
-    const response = await getAnthropicService().createMessage(
+    const response = await secureAnthropicService.createMessage(
+      (req as AuthRequest).user?.id || 'system',
       conversation.messages,
       {
         model,
@@ -100,7 +104,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
 
     // Calculate and update cost
     if (response.usage) {
-              const cost = getAnthropicService().calculateCost(response.usage, model);
+      const cost = secureAnthropicService.calculateCost(response.usage, model);
       conversation.totalCost += cost.totalCost;
       
       res.json({
@@ -134,7 +138,7 @@ router.post('/conversations/:id/messages', async (req, res) => {
 
 // Get available models
 router.get('/models', (req, res) => {
-  res.json(getAnthropicService().getAvailableModels());
+  res.json(secureAnthropicService.getAvailableModels());
 });
 
 // Export conversation as markdown

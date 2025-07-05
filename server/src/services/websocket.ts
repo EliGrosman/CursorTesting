@@ -1,6 +1,7 @@
 import { Server as IOServer, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { getAnthropicService } from './anthropic';
+import { secureAnthropicService } from './anthropic-secure';
+import Anthropic from '@anthropic-ai/sdk';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
 
 interface WSMessage {
@@ -93,15 +94,35 @@ class WebSocketService {
         content: msg.content
       }));
 
-      // Start streaming response
-      const stream = getAnthropicService().streamMessage(cleanMessages, {
-        model,
-        temperature,
-        maxTokens,
-        systemPrompt,
-        stream: true,
-        enableThinking
-      });
+      // Determine which Anthropic client to use:
+      // 1. If the client supplied an apiKey in the payload, create a one-off client with that key.
+      // 2. Otherwise, attempt to use a per-user key via secureAnthropicService (requires auth in future).
+      // 3. Finally, fall back to the system key (if configured).
+
+      let stream: AsyncIterable<any>;
+
+      if (data.apiKey) {
+        const tempClient = new Anthropic({ apiKey: data.apiKey });
+        stream = tempClient.messages.create({
+          model,
+          max_tokens: maxTokens,
+          temperature,
+          messages: cleanMessages,
+          ...(systemPrompt ? { system: systemPrompt } : {}),
+          stream: true,
+          ...(enableThinking ? { metadata: { thinking_mode: 'enabled' } } : {})
+        }) as unknown as AsyncIterable<any>;
+      } else {
+        // Anonymous/system workflow
+        stream = secureAnthropicService.streamMessage('system', cleanMessages, {
+          model,
+          temperature,
+          maxTokens,
+          systemPrompt,
+          stream: true,
+          enableThinking
+        });
+      }
 
       let fullContent = '';
       let thinkingContent = '';
@@ -159,7 +180,7 @@ class WebSocketService {
           // Send final message with usage info
           const usage = (event as any).message?.usage;
           if (usage) {
-            const cost = getAnthropicService().calculateCost(usage, model);
+            const cost = secureAnthropicService.calculateCost(usage, model);
             this.sendMessage(socket, {
               type: 'usage',
               data: cost
