@@ -26,11 +26,7 @@ export class SecureAnthropicService {
     );
 
     if (!apiKeyRecord) {
-      // Fallback to environment variable for system use
-      if (process.env.ANTHROPIC_API_KEY) {
-        return this.getSystemClient();
-      }
-      throw new Error('No active API key found. Please add one in settings.');
+      throw new Error('No active API key found. Please add your Anthropic API key in settings.');
     }
 
     // Decrypt the API key
@@ -54,12 +50,12 @@ export class SecureAnthropicService {
     return client;
   }
 
-  // Get system client using environment variable
-  private getSystemClient(): Anthropic {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('System ANTHROPIC_API_KEY not configured');
+  // Get client with provided API key (for immediate use without storing)
+  getClientWithKey(apiKey: string): Anthropic {
+    if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+      throw new Error('Invalid API key format. Must start with "sk-ant-"');
     }
-    return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    return new Anthropic({ apiKey });
   }
 
   async createMessage(
@@ -73,9 +69,12 @@ export class SecureAnthropicService {
       stream?: boolean;
       tools?: any[];
       enableThinking?: boolean;
+      directApiKey?: string; // Allow direct API key for immediate use
     } = {}
   ) {
-    const client = await this.getClientForUser(userId);
+    const client = options.directApiKey 
+      ? this.getClientWithKey(options.directApiKey)
+      : await this.getClientForUser(userId);
     
     const {
       model = 'claude-3-5-sonnet-20241022',
@@ -155,7 +154,7 @@ export class SecureAnthropicService {
     );
 
     if (!apiKeyRecord) {
-      throw new Error('No active API key found');
+      throw new Error('No active API key found. Please add your Anthropic API key in settings.');
     }
 
     const apiKey = encryptionService.decrypt(apiKeyRecord.encrypted_key);

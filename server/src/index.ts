@@ -16,6 +16,7 @@ if (process.env.NODE_ENV !== 'production') {
 import chatRoutes from './routes/chat';
 import searchRoutes from './routes/search';
 import fileRoutes from './routes/file';
+import apiKeyRoutes from './routes/api-keys';
 
 // Import WebSocket handler
 import { handleWebSocketConnection } from './services/websocket';
@@ -64,6 +65,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/chat', chatRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api', apiKeyRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

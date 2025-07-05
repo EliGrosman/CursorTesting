@@ -21,14 +21,8 @@ if [ ! -f "server/.env" ]; then
     exit 1
 fi
 
-# Check if API key is set
-if grep -q "your_anthropic_api_key_here" server/.env; then
-    echo "⚠️  Please update your Anthropic API key in server/.env"
-    echo "Get your API key at: https://console.anthropic.com/"
-    exit 1
-fi
-
 echo "✅ Configuration looks good!"
+echo "💡 This is a BYOK (Bring Your Own Key) system - users provide their own API keys"
 echo ""
 echo "🌐 Starting servers..."
 echo "   Frontend: http://localhost:5173"
