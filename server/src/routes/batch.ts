@@ -33,7 +33,7 @@ router.post('/jobs', authenticate, async (req: AuthRequest, res) => {
     );
 
     // Submit to Anthropic batch API
-    const batchResponse = await getAnthropicService().createBatch(requests);
+    const batchResponse: any = await getAnthropicService().createBatch(requests);
 
     // Update job with batch ID
     await query(
@@ -94,7 +94,7 @@ router.get('/jobs/:id', authenticate, async (req: AuthRequest, res) => {
 
     // If job is pending, check status from Anthropic
     if (job.status === 'pending' && job.batch_id) {
-      const batchStatus = await getAnthropicService().getBatchStatus(job.batch_id);
+      const batchStatus: any = await getAnthropicService().getBatchStatus(job.batch_id);
       
       // Update job status
       if (batchStatus.status === 'completed') {
