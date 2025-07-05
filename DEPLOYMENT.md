@@ -1,12 +1,12 @@
-# 🚀 Deployment Guide
+# 🚀 Deployment Guide - Render Only
 
-This guide covers deploying Claude Clone with CI/CD to Vercel (backend) and Render (frontend), with enhanced security features.
+This guide covers deploying Claude Clone entirely on Render with CI/CD, WebSocket support, and enhanced security features.
 
 ## 📋 Overview
 
-- **Backend**: Deployed to Vercel (serverless) or Render (traditional server)
+- **Backend**: Deployed to Render (with full WebSocket support)
 - **Frontend**: Deployed to Render as a static site
-- **Database**: PostgreSQL on Render or external provider
+- **Database**: PostgreSQL on Render
 - **CI/CD**: GitHub Actions for automated deployment
 - **Security**: Encrypted API keys, JWT auth, CORS protection
 
@@ -48,89 +48,79 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
    psql $DATABASE_URL < server/src/db/schema.sql
    ```
 
-### Step 2: Vercel Backend Setup
+### Step 2: Create Render Services
 
-1. **Install Vercel CLI**
-   ```bash
-   npm i -g vercel
-   ```
+1. **Use render.yaml Blueprint**
+   - Go to Render Dashboard
+   - Click "New" → "Blueprint"
+   - Connect your GitHub repository
+   - Render will automatically detect `render.yaml`
 
-2. **Link Project**
-   ```bash
-   cd server
-   vercel link
-   ```
+2. **Or Manual Setup - Backend**
+   - Create new Web Service
+   - Connect GitHub repository
+   - Build Command: `cd server && npm install && npm run build`
+   - Start Command: `cd server && npm start`
+   - Environment: Node
+   - Add environment variables:
+     ```
+     DATABASE_URL (from database)
+     JWT_SECRET (generate)
+     ENCRYPTION_KEY (generate)
+     ALLOWED_ORIGINS=https://your-frontend.onrender.com
+     ```
 
-3. **Configure Environment Variables**
-   ```bash
-   vercel env add DATABASE_URL
-   vercel env add JWT_SECRET
-   vercel env add ENCRYPTION_KEY
-   vercel env add ALLOWED_ORIGINS
-   ```
-
-4. **Deploy**
-   ```bash
-   vercel --prod
-   ```
-
-### Step 3: Render Frontend Setup
-
-1. **Create New Static Site on Render**
+3. **Manual Setup - Frontend**
+   - Create new Static Site
    - Connect GitHub repository
    - Build Command: `cd client && npm install && npm run build`
    - Publish Directory: `client/dist`
+   - Add environment variables:
+     ```
+     VITE_API_URL=https://your-backend.onrender.com
+     VITE_WS_URL=wss://your-backend.onrender.com
+     ```
 
-2. **Environment Variables**
-   ```
-   VITE_API_URL=https://your-api.vercel.app
-   VITE_WS_URL=wss://your-api.vercel.app
-   ```
-
-### Step 4: GitHub Actions Setup
+### Step 3: GitHub Actions Setup
 
 1. **Add Secrets to GitHub**
    ```
-   VERCEL_TOKEN
-   VERCEL_ORG_ID
-   VERCEL_PROJECT_ID_BACKEND
    RENDER_API_KEY
-   RENDER_SERVICE_ID
-   PRODUCTION_API_URL
-   STAGING_API_URL
+   RENDER_BACKEND_SERVICE_ID
+   RENDER_FRONTEND_SERVICE_ID
    PRODUCTION_DATABASE_URL
    STAGING_DATABASE_URL
    ```
 
-2. **Enable Actions**
+2. **Get Render API Key**
+   - Go to Account Settings in Render
+   - Generate API Key
+   - Add to GitHub Secrets
+
+3. **Get Service IDs**
+   - Find in Render dashboard URL: `https://dashboard.render.com/web/srv-XXXX`
+   - The `srv-XXXX` part is your service ID
+
+4. **Enable Actions**
    - Push to `main` deploys to staging
    - Push to `production` deploys to production
 
-## 🔄 Alternative: Full Render Deployment
+## � Key Benefits of Render
 
-If you prefer not to use Vercel (for WebSocket support):
-
-### Backend on Render
-
-1. **Create Web Service**
-   ```yaml
-   # render.yaml backend section
-   - type: web
-     name: claude-clone-api
-     env: node
-     buildCommand: cd server && npm install && npm run build
-     startCommand: cd server && npm start
-   ```
-
-2. **Configure for WebSockets**
-   - Render supports WebSockets natively
+1. **Full WebSocket Support**
+   - Native WebSocket support for real-time streaming
    - No serverless limitations
+   - Persistent connections
 
-### Database on Render
-
-1. **Create PostgreSQL Database**
+2. **Integrated PostgreSQL**
    - Automatic backups
    - Connection pooling included
+   - Easy scaling
+
+3. **Simple Deployment**
+   - Blueprint deployment with `render.yaml`
+   - Automatic HTTPS
+   - Preview environments
 
 ## 📊 Environment Variables Reference
 
@@ -265,9 +255,9 @@ VITE_WS_URL=wss://api.yourdomain.com
 3. Verify user has active key
 
 ### WebSocket Connection
-1. Vercel doesn't support WebSockets
-2. Use polling fallback or Render
-3. Check `VITE_WS_URL` configuration
+1. Ensure `VITE_WS_URL` uses `wss://` for HTTPS
+2. Check backend logs for connection errors
+3. Verify CORS allows WebSocket upgrade
 
 ## 🎯 Best Practices
 

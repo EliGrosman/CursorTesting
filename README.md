@@ -62,7 +62,11 @@ A complete Progressive Web App (PWA) clone of Claude with enhanced features, usi
 - Anthropic API key ([Get one here](https://console.anthropic.com/))
 - (Optional) Google Custom Search API key for enhanced research
 
-## Installation
+## Quick Deployment 🚀
+
+Deploy to Render in 5 minutes! See [RENDER_QUICKSTART.md](RENDER_QUICKSTART.md) for the fastest deployment.
+
+## Local Installation
 
 1. **Clone the repository**
    ```bash
@@ -161,17 +165,26 @@ The app tracks costs in real-time and displays them after each message. Use the 
 
 ### Backend (Node.js + Express)
 - RESTful API for conversation management
-- WebSocket server for real-time streaming
+- WebSocket server for real-time streaming (fully supported on Render)
 - Integration with Anthropic SDK
+- Encrypted API key storage with user management
 - Web scraping for research capabilities
-- File upload handling
+- File upload handling with multer
 
 ### Frontend (React + TypeScript)
 - Zustand for state management
 - TailwindCSS for styling
 - React Router for navigation
-- Socket.io client for WebSocket
+- Socket.io client for real-time updates
 - React Markdown for rendering
+- PWA capabilities with service workers
+
+### Deployment (Render)
+- Full WebSocket support out of the box
+- Automatic HTTPS/SSL certificates
+- PostgreSQL with automatic backups
+- Easy horizontal scaling
+- CI/CD with GitHub Actions
 
 ## Development
 

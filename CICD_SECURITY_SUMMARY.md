@@ -10,22 +10,18 @@ This document summarizes all CI/CD and security enhancements made to Claude Clon
   - Automated testing with PostgreSQL service
   - Conditional deployment (staging/production)
   - Multi-stage pipeline (test → deploy → migrate)
-  - Environment-based configuration
+  - Render-only deployment
 
-### Deployment Targets
-1. **Backend Options**:
-   - Vercel (serverless, no WebSocket)
-   - Render (traditional, WebSocket support)
-   
-2. **Frontend**:
-   - Render static site
-   - Environment-based API configuration
+### Deployment Target
+- **Platform**: Render (full WebSocket support)
+- **Backend**: Web Service with persistent connections
+- **Frontend**: Static site with PWA capabilities
+- **Database**: PostgreSQL with automatic backups
 
 ### Configuration Files
-- `vercel.json` - Vercel deployment config
-- `server/vercel.json` - Server-specific Vercel config
-- `render.yaml` - Render deployment blueprint
-- `server/src/index.vercel.ts` - Serverless-compatible entry
+- `render.yaml` - Complete infrastructure blueprint
+- `.github/workflows/deploy.yml` - CI/CD pipeline
+- Environment-based configuration
 
 ## 🔐 Security Enhancements
 
@@ -204,16 +200,18 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 1. **Before Production**:
    - Change all default secrets
-   - Enable HTTPS only
-   - Set up monitoring
-   - Configure backups
+   - HTTPS is automatic on Render
+   - Set up monitoring alerts
+   - Enable database backups
    
-2. **API Key Migration**:
-   - Users must add their own keys
-   - System key is optional
-   - Keys expire (configurable)
+2. **API Key Security**:
+   - Users provide their own keys
+   - Keys are encrypted at rest
+   - Password required to decrypt
+   - Optional system fallback key
    
-3. **WebSocket Limitation**:
-   - Vercel doesn't support WebSockets
-   - Use Render for full features
-   - Or implement polling fallback
+3. **Render Benefits**:
+   - Full WebSocket support
+   - Automatic HTTPS/SSL
+   - Built-in health checks
+   - Easy scaling options

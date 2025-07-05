@@ -1,4 +1,42 @@
 services:
+  # Backend API with WebSocket Support
+  - type: web
+    name: claude-clone-api
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd server && npm install && npm run build
+    startCommand: cd server && npm start
+    healthCheckPath: /api/health
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: claude-clone-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://claude-clone-frontend.onrender.com
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: ANTHROPIC_API_KEY
+        sync: false # Optional system key
+      - key: SEARCH_API_KEY
+        sync: false
+      - key: SEARCH_ENGINE_ID
+        sync: false
+
   # Frontend - Static Site
   - type: web
     name: claude-clone-frontend
@@ -9,6 +47,10 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 18
+      - key: VITE_API_URL
+        value: https://claude-clone-api.onrender.com
+      - key: VITE_WS_URL
+        value: wss://claude-clone-api.onrender.com
     headers:
       - path: /*
         name: X-Frame-Options
@@ -22,43 +64,19 @@ services:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+      - path: /service-worker.js
+        name: Service-Worker-Allowed
+        value: /
+      - path: /service-worker.js
+        name: Cache-Control
+        value: no-cache
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
-
-  # Backend API (Alternative to Vercel)
-  - type: web
-    name: claude-clone-api
-    env: node
-    region: oregon
-    plan: starter
-    buildCommand: cd server && npm install && npm run build
-    startCommand: cd server && npm start
-    healthCheckPath: /api/health
-    envVars:
-      - key: NODE_VERSION
-        value: 18
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
-      - key: DATABASE_URL
-        fromDatabase:
-          name: claude-clone-db
-          property: connectionString
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: JWT_SECRET
-        generateValue: true
-      - key: ENCRYPTION_KEY
-        generateValue: true
-      - key: ALLOWED_ORIGINS
-        value: https://claude-clone-frontend.onrender.com
-      - key: RATE_LIMIT_WINDOW_MS
-        value: 60000
-      - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100
 
 databases:
   - name: claude-clone-db

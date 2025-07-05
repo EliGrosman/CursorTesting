@@ -67,7 +67,7 @@ jobs:
         cd client
         npm run build
 
-  deploy-backend:
+  deploy-render:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
@@ -75,52 +75,30 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Deploy Backend to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_BACKEND }}
-      run: |
-        npm i -g vercel
-        cd server
-        vercel --prod --token=$VERCEL_TOKEN
-
-  deploy-frontend:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-    
-    - name: Build Frontend
-      env:
-        VITE_API_URL: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_API_URL || secrets.STAGING_API_URL }}
-        VITE_WS_URL: ${{ github.ref == 'refs/heads/production' && secrets.PRODUCTION_WS_URL || secrets.STAGING_WS_URL }}
-      run: |
-        cd client
-        npm install
-        npm run build
-    
-    - name: Deploy to Render
+    - name: Deploy Backend to Render
       env:
         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        RENDER_BACKEND_SERVICE_ID: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
       run: |
         curl -X POST \
           -H "Authorization: Bearer $RENDER_API_KEY" \
           -H "Content-Type: application/json" \
           -d '{"clearCache": "clear"}' \
-          https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys
+          https://api.render.com/v1/services/$RENDER_BACKEND_SERVICE_ID/deploys
+    
+    - name: Deploy Frontend to Render
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_FRONTEND_SERVICE_ID: ${{ secrets.RENDER_FRONTEND_SERVICE_ID }}
+      run: |
+        curl -X POST \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"clearCache": "clear"}' \
+          https://api.render.com/v1/services/$RENDER_FRONTEND_SERVICE_ID/deploys
 
   update-database:
-    needs: [deploy-backend, deploy-frontend]
+    needs: deploy-render
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
     
