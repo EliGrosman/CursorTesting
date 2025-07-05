@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: free
     buildCommand: cd server && npm install && npm run build && npm run db:migrate
-    startCommand: cd server && npm start
+    startCommand: cd server && npm run db:migrate && npm start
     healthCheckPath: /api/health
     pullRequestPreviewsEnabled: true
     envVars:
