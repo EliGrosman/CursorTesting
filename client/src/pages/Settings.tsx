@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Save, Brain, Zap, MessageSquare } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
 import toast from 'react-hot-toast';

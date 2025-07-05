@@ -1,4 +1,4 @@
-import { useRef, KeyboardEvent } from 'react';
+import React, { useRef, KeyboardEvent } from 'react';
 import { Paperclip, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import clsx from 'clsx';

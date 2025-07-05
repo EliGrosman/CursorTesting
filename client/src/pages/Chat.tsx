@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, StopCircle, Brain, Search } from 'lucide-react';
 import { useChatStore } from '../stores/chatStore';
